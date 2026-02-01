@@ -8,12 +8,68 @@ interface WikiContentProps {
     pageId: string;
 }
 
-// Simple markdown renderer
+// Simple markdown renderer with GitBook-style blocks support
 function renderMarkdown(content: string): string {
     let html = content;
 
-    // Escape HTML first
-    html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    // Process GitBook-style blocks BEFORE escaping HTML
+
+    // Hint blocks
+    html = html.replace(/{% hint style="(\w+)" %}([\s\S]*?){% endhint %}/g, (_, style, text) => {
+        const icons: Record<string, string> = { info: 'ℹ️', warning: '⚠️', success: '✅', danger: '🚫' };
+        return `<div class="wiki-hint-block ${style}"><span class="wiki-hint-icon">${icons[style] || 'ℹ️'}</span><div>${text.trim()}</div></div>`;
+    });
+
+    // Content refs (page link cards)
+    html = html.replace(/{% content-ref url="([^"]+)" %}([\s\S]*?){% endcontent-ref %}/g, (_, url, text) => {
+        return `<a href="${url}" class="wiki-page-link-card">${text.trim()}</a>`;
+    });
+
+    // Tabs (basic rendering)
+    html = html.replace(/{% tabs %}([\s\S]*?){% endtabs %}/g, (_, tabsContent) => {
+        const tabs: { title: string; content: string }[] = [];
+        const tabRegex = /{% tab title="([^"]+)" %}([\s\S]*?){% endtab %}/g;
+        let tabMatch;
+        while ((tabMatch = tabRegex.exec(tabsContent)) !== null) {
+            tabs.push({ title: tabMatch[1], content: tabMatch[2].trim() });
+        }
+        if (tabs.length === 0) return tabsContent;
+
+        const tabsHtml = tabs.map((tab, i) =>
+            `<button class="wiki-tab-btn${i === 0 ? ' active' : ''}" data-tab="${i}">${tab.title}</button>`
+        ).join('');
+        const contentHtml = tabs.map((tab, i) =>
+            `<div class="wiki-tab-content${i === 0 ? ' active' : ''}" data-tab="${i}">${tab.content}</div>`
+        ).join('');
+
+        return `<div class="wiki-tabs"><div class="wiki-tabs-header">${tabsHtml}</div><div class="wiki-tabs-body">${contentHtml}</div></div>`;
+    });
+
+    // Expandable/details blocks  
+    html = html.replace(/<details>([\s\S]*?)<\/details>/g, (_, content) => {
+        const summaryMatch = content.match(/<summary>([\s\S]*?)<\/summary>/);
+        const summary = summaryMatch ? summaryMatch[1].trim() : 'Подробнее';
+        const body = content.replace(/<summary>[\s\S]*?<\/summary>/, '').trim();
+        return `<details class="wiki-expandable"><summary class="wiki-expandable-summary">${summary}</summary><div class="wiki-expandable-content">${body}</div></details>`;
+    });
+
+    // Escape HTML
+    html = html.replace(/&(?!amp;|lt;|gt;)/g, '&amp;');
+
+    // But don't double escape existing blocks
+    const preservedBlocks: string[] = [];
+    html = html.replace(/<(div|a|details|button|span)[^>]*>[\s\S]*?<\/\1>/g, (match) => {
+        preservedBlocks.push(match);
+        return `__PRESERVED_${preservedBlocks.length - 1}__`;
+    });
+
+    // Now escape remaining HTML
+    html = html.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    // Restore preserved blocks
+    preservedBlocks.forEach((block, i) => {
+        html = html.replace(`__PRESERVED_${i}__`, block);
+    });
 
     // Code blocks (must be before inline code)
     html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) => {
@@ -28,9 +84,20 @@ function renderMarkdown(content: string): string {
     html = html.replace(/^## (.+)$/gm, '<h2 class="wiki-h2">$1</h2>');
     html = html.replace(/^# (.+)$/gm, '<h1 class="wiki-h1">$1</h1>');
 
-    // Bold and italic
+    // Bold, italic, strikethrough
     html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
     html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    html = html.replace(/~~([^~]+)~~/g, '<del>$1</del>');
+
+    // Horizontal rule
+    html = html.replace(/^---$/gm, '<hr class="wiki-hr">');
+
+    // Checkboxes
+    html = html.replace(/^- \[ \] (.+)$/gm, '<div class="wiki-checkbox"><input type="checkbox" disabled><span>$1</span></div>');
+    html = html.replace(/^- \[x\] (.+)$/gm, '<div class="wiki-checkbox checked"><input type="checkbox" checked disabled><span>$1</span></div>');
+
+    // Images
+    html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<figure class="wiki-figure"><img src="$2" alt="$1" class="wiki-img"><figcaption>$1</figcaption></figure>');
 
     // Links - internal wiki links
     html = html.replace(/\[([^\]]+)\]\(\/wiki\/([^)]+)\)/g, '<a href="/wiki/$2" class="wiki-link">$1</a>');
@@ -44,7 +111,6 @@ function renderMarkdown(content: string): string {
     // Tables
     html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
         const cells = content.split('|').map((cell: string) => cell.trim());
-        // Check if it's a separator row
         if (cells.every((cell: string) => /^-+$/.test(cell))) {
             return '<!-- table separator -->';
         }
@@ -53,10 +119,7 @@ function renderMarkdown(content: string): string {
         const cellsHtml = cells.map((cell: string) => `<${cellTag}>${cell}</${cellTag}>`).join('');
         return `<tr>${cellsHtml}</tr>`;
     });
-
-    // Wrap table rows
     html = html.replace(/((?:<tr>.*<\/tr>\n?)+)/g, '<table class="wiki-table"><tbody>$1</tbody></table>');
-    // Remove separator comments
     html = html.replace(/<!-- table separator -->\n?/g, '');
 
     // Lists - unordered
@@ -67,7 +130,7 @@ function renderMarkdown(content: string): string {
     html = html.replace(/^\d+\. (.+)$/gm, '<li class="wiki-li-ordered">$1</li>');
     html = html.replace(/((?:<li class="wiki-li-ordered">.*<\/li>\n?)+)/g, '<ol class="wiki-ol">$1</ol>');
 
-    // Paragraphs (lines not already wrapped)
+    // Paragraphs
     html = html.split('\n\n').map(block => {
         if (block.startsWith('<') || block.trim() === '') return block;
         return `<p class="wiki-p">${block}</p>`;
@@ -78,6 +141,7 @@ function renderMarkdown(content: string): string {
 
     return html;
 }
+
 
 export default function WikiContent({ pageId }: WikiContentProps) {
     const { currentPage, navigation, canEdit, loading, getChildren } = useWiki();
