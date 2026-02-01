@@ -60,7 +60,7 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
                         </button>
                     )}
                     <Link href={`/wiki/${page.id}`} className="wiki-sidebar-link">
-                        {page.icon && <span className="wiki-sidebar-icon">{page.icon}</span>}
+                        {/* Icon removed as requested */}
                         <span className="wiki-sidebar-title">{page.title}</span>
                     </Link>
                 </div>
@@ -72,6 +72,23 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
             </div>
         );
     };
+
+    // Group pages by category
+    const groupedPages: Record<string, WikiPage[]> = {};
+    const uncategorizedPages: WikiPage[] = [];
+
+    pageTree.forEach(page => {
+        if (page.category) {
+            if (!groupedPages[page.category]) {
+                groupedPages[page.category] = [];
+            }
+            groupedPages[page.category].push(page);
+        } else {
+            uncategorizedPages.push(page);
+        }
+    });
+
+    const categoryNames = Object.keys(groupedPages).sort();
 
     return (
         <aside className="wiki-sidebar">
@@ -95,7 +112,21 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
             </button>
 
             <nav className="wiki-sidebar-nav">
-                {pageTree.map(page => renderPageItem(page))}
+                {/* Categorized pages */}
+                {categoryNames.map(category => (
+                    <div key={category} className="wiki-sidebar-group">
+                        <div className="wiki-sidebar-group-title">{category}</div>
+                        {groupedPages[category].map(page => renderPageItem(page))}
+                    </div>
+                ))}
+
+                {/* Uncategorized pages (if any, show at the bottom or top depending on preference, putting at bottom here) */}
+                {uncategorizedPages.length > 0 && (
+                    <div className="wiki-sidebar-group">
+                        {categoryNames.length > 0 && <div className="wiki-sidebar-group-title">Разное</div>}
+                        {uncategorizedPages.map(page => renderPageItem(page))}
+                    </div>
+                )}
             </nav>
 
             {canEdit && (

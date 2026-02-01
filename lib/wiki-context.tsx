@@ -37,9 +37,9 @@ interface WikiContextType {
 
     // Admin actions
     canEdit: boolean;
-    createPage: (title: string, content: string, parentId?: string, icon?: string) => WikiPage | null;
+    createPage: (title: string, content: string, parentId?: string, icon?: string, category?: string) => WikiPage | null;
     updatePageContent: (id: string, content: string) => boolean;
-    updatePageMeta: (id: string, updates: { title?: string; icon?: string; parentId?: string }) => boolean;
+    updatePageMeta: (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }) => boolean;
     removePage: (id: string) => boolean;
 
     // Utils
@@ -142,7 +142,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
     }, []);
 
     // Admin actions
-    const createPage = useCallback((title: string, content: string, parentId?: string, icon?: string): WikiPage | null => {
+    const createPage = useCallback((title: string, content: string, parentId?: string, icon?: string, category?: string): WikiPage | null => {
         if (!canEdit || !user) return null;
 
         try {
@@ -155,6 +155,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
                 content,
                 parentId,
                 icon,
+                category,
                 order: maxOrder + 1,
                 createdBy: user.username,
             });
@@ -186,7 +187,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
         }
     }, [canEdit, currentPage, refresh]);
 
-    const updatePageMeta = useCallback((id: string, updates: { title?: string; icon?: string; parentId?: string }): boolean => {
+    const updatePageMeta = useCallback((id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }): boolean => {
         if (!canEdit) return false;
 
         try {

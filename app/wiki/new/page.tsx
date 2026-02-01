@@ -5,14 +5,14 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWiki } from '@/lib/wiki-context';
 import WikiEditor from '@/components/wiki/WikiEditor';
-import EmojiPicker from '@/components/wiki/EmojiPicker';
+// import EmojiPicker from '@/components/wiki/EmojiPicker'; // Removed
 
 export default function WikiNewPage() {
     const router = useRouter();
     const { createPage, pages, canEdit, loading } = useWiki();
     const [saving, setSaving] = useState(false);
     const [title, setTitle] = useState('');
-    const [icon, setIcon] = useState('📄');
+    const [category, setCategory] = useState('');
     const [parentId, setParentId] = useState<string>('');
     const [step, setStep] = useState<'meta' | 'content'>('meta');
     const [content, setContent] = useState('');
@@ -47,7 +47,8 @@ export default function WikiNewPage() {
                 title,
                 finalContent,
                 parentId || undefined,
-                icon || undefined
+                undefined, // Icon deprecated
+                category || undefined
             );
 
             if (newPage) {
@@ -71,6 +72,9 @@ export default function WikiNewPage() {
     // Parent page options (exclude pages that are too deep)
     const parentOptions = pages.filter(p => p.id !== 'home');
 
+    // Existing categories for suggestions
+    const existingCategories = Array.from(new Set(pages.map(p => p.category).filter(Boolean))) as string[];
+
     return (
         <div className="wiki-new-page-gitbook">
             {step === 'meta' ? (
@@ -86,9 +90,8 @@ export default function WikiNewPage() {
                             </Link>
                         </div>
 
-                        {/* Editable title with emoji picker */}
+                        {/* Editable title */}
                         <div className="wiki-gitbook-title-editor">
-                            <EmojiPicker value={icon} onChange={setIcon} className="wiki-title-emoji" />
                             <input
                                 type="text"
                                 value={title}
@@ -101,12 +104,38 @@ export default function WikiNewPage() {
 
                         {/* Page description (optional) */}
                         <p className="wiki-gitbook-description">
-                            Введите название и выберите иконку для новой страницы
+                            Введите название и выберите категорию для новой страницы
                         </p>
                     </header>
 
-                    {/* Parent selection */}
+                    {/* Settings: Category and Parent */}
                     <div className="wiki-new-settings">
+                        <div className="wiki-setting-card">
+                            <label htmlFor="category-input">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                                </svg>
+                                Категория
+                            </label>
+                            <input
+                                id="category-input"
+                                type="text"
+                                value={category}
+                                onChange={(e) => setCategory(e.target.value)}
+                                className="wiki-input-gitbook"
+                                placeholder="Например: Гайды"
+                                list="categories-list"
+                            />
+                            <datalist id="categories-list">
+                                {existingCategories.map(cat => (
+                                    <option key={cat} value={cat} />
+                                ))}
+                            </datalist>
+                            <span className="wiki-setting-hint">
+                                Создайте новую категорию или выберите существующую
+                            </span>
+                        </div>
+
                         <div className="wiki-setting-card">
                             <label htmlFor="parent-select">
                                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -123,7 +152,7 @@ export default function WikiNewPage() {
                                 <option value="">— Корневая страница —</option>
                                 {parentOptions.map(page => (
                                     <option key={page.id} value={page.id}>
-                                        {page.icon} {page.title}
+                                        {page.title}
                                     </option>
                                 ))}
                             </select>
@@ -168,7 +197,6 @@ export default function WikiNewPage() {
                             </button>
                         </div>
                         <div className="wiki-gitbook-title-display">
-                            <span className="wiki-title-emoji-display">{icon}</span>
                             <h1>{title}</h1>
                         </div>
                     </header>

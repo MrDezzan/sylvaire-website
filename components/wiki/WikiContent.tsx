@@ -175,9 +175,6 @@ export default function WikiContent({ pageId }: WikiContentProps) {
         <article className="wiki-content">
             <header className="wiki-content-header">
                 <div className="wiki-content-meta">
-                    {currentPage.icon && (
-                        <span className="wiki-content-icon">{currentPage.icon}</span>
-                    )}
                     <h1 className="wiki-content-title">{currentPage.title}</h1>
                 </div>
                 {canEdit && (

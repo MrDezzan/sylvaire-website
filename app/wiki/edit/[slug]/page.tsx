@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWiki } from '@/lib/wiki-context';
 import WikiEditor from '@/components/wiki/WikiEditor';
-import EmojiPicker from '@/components/wiki/EmojiPicker';
+// import EmojiPicker from '@/components/wiki/EmojiPicker'; // Removed
 
 interface EditPageProps {
     params: Promise<{ slug: string }>;
@@ -17,7 +17,7 @@ export default function WikiEditPage({ params }: EditPageProps) {
     const { currentPage, loadPage, updatePageContent, updatePageMeta, removePage, canEdit, loading } = useWiki();
     const [saving, setSaving] = useState(false);
     const [title, setTitle] = useState('');
-    const [icon, setIcon] = useState('');
+    const [category, setCategory] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
@@ -27,7 +27,7 @@ export default function WikiEditPage({ params }: EditPageProps) {
     useEffect(() => {
         if (currentPage) {
             setTitle(currentPage.title);
-            setIcon(currentPage.icon || '📄');
+            setCategory(currentPage.category || '');
         }
     }, [currentPage]);
 
@@ -65,8 +65,11 @@ export default function WikiEditPage({ params }: EditPageProps) {
             updatePageContent(slug, content);
 
             // Update meta if changed
-            if (title !== currentPage.title || icon !== currentPage.icon) {
-                updatePageMeta(slug, { title, icon: icon || undefined });
+            if (title !== currentPage.title || category !== (currentPage.category || '')) {
+                updatePageMeta(slug, {
+                    title,
+                    category: category || undefined
+                });
             }
 
             router.push(`/wiki/${slug}`);
@@ -126,9 +129,8 @@ export default function WikiEditPage({ params }: EditPageProps) {
                     )}
                 </div>
 
-                {/* Editable title with emoji picker */}
-                <div className="wiki-gitbook-title-editor">
-                    <EmojiPicker value={icon} onChange={setIcon} className="wiki-title-emoji" />
+                {/* Editable title and category */}
+                <div className="wiki-gitbook-title-editor-wrapper">
                     <input
                         type="text"
                         value={title}
@@ -136,6 +138,21 @@ export default function WikiEditPage({ params }: EditPageProps) {
                         className="wiki-gitbook-title-input"
                         placeholder="Название страницы..."
                     />
+
+                    <div className="wiki-category-input-wrapper">
+                        <label className="wiki-category-label">Категория:</label>
+                        <input
+                            type="text"
+                            value={category}
+                            onChange={(e) => setCategory(e.target.value)}
+                            className="wiki-category-input"
+                            placeholder="Без категории"
+                            list="categories-list-edit"
+                        />
+                        <datalist id="categories-list-edit">
+                            {/* Getting categories from useWiki would be better but we don't have it in props, so just manual input for now or fetch global pages if needed */}
+                        </datalist>
+                    </div>
                 </div>
             </header>
 

@@ -8,8 +8,9 @@ export interface WikiPage {
     title: string;        // Page title
     content: string;      // Markdown content
     parentId?: string;    // Parent page ID for hierarchy
+    category?: string;    // Category for grouping
     order: number;        // Order in menu
-    icon?: string;        // Emoji icon
+    icon?: string;        // @deprecated Emoji icon (will be removed from UI)
     createdAt: string;
     updatedAt: string;
     createdBy: string;    // Author username
@@ -47,6 +48,7 @@ const DEFAULT_WIKI: WikiStructure = {
 > **Совет:** Нажмите \`Ctrl+K\` для быстрого поиска по wiki.
 `,
             order: 0,
+            category: 'Главная',
             icon: '🏠',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -82,6 +84,7 @@ const DEFAULT_WIKI: WikiStructure = {
 `,
             parentId: 'home',
             order: 1,
+            category: 'Гайды',
             icon: '🎮',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -119,6 +122,7 @@ const DEFAULT_WIKI: WikiStructure = {
 `,
             parentId: 'home',
             order: 2,
+            category: 'Информация',
             icon: '📜',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
