@@ -14,7 +14,6 @@ import {
 
 export default function Navbar() {
     const { user, loading, logout } = useAuth();
-    const wikiUrl = process.env.NEXT_PUBLIC_WIKI_URL;
     const [notification, setNotification] = useState<string | null>(null);
     const [showUserMenu, setShowUserMenu] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,11 +45,7 @@ export default function Navbar() {
                         <Link href="/forum" className="nav-link"><IconComment size={16} /> Форум</Link>
                         <Link href="/leaderboard" className="nav-link"><IconTrophy size={16} /> Статистика</Link>
                         <a href="https://shop.sylvaire.ru" className="nav-link"><IconHome size={16} /> Магазин</a>
-                        {wikiUrl ? (
-                            <a href={wikiUrl} target="_blank" rel="noopener noreferrer" className="nav-link"><IconLogs size={16} /> Вики</a>
-                        ) : (
-                            <Link href="/wiki" className="nav-link"><IconLogs size={16} /> Вики</Link>
-                        )}
+                        <Link href="/wiki" className="nav-link"><IconLogs size={16} /> Вики</Link>
                         <Link href="/map" className="nav-link"><IconHome size={16} /> Карта</Link>
                     </div>
 
@@ -193,17 +188,10 @@ export default function Navbar() {
                         <IconHome className="mobile-nav-icon" size={20} />
                         Магазин
                     </a>
-                    {wikiUrl ? (
-                        <a href={wikiUrl} target="_blank" rel="noopener noreferrer" className="mobile-nav-link" onClick={closeMobileMenu}>
-                            <IconLogs className="mobile-nav-icon" size={20} />
-                            Вики
-                        </a>
-                    ) : (
-                        <Link href="/wiki" className="mobile-nav-link" onClick={closeMobileMenu}>
-                            <IconLogs className="mobile-nav-icon" size={20} />
-                            Вики
-                        </Link>
-                    )}
+                    <Link href="/wiki" className="mobile-nav-link" onClick={closeMobileMenu}>
+                        <IconLogs className="mobile-nav-icon" size={20} />
+                        Вики
+                    </Link>
                     <Link href="/map" className="mobile-nav-link" onClick={closeMobileMenu}>
                         <IconHome className="mobile-nav-icon" size={20} />
                         Карта

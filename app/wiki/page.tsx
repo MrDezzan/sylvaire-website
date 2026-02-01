@@ -1,28 +1,34 @@
 'use client';
 
-import Link from 'next/link';
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { useWiki } from '@/lib/wiki-context';
+import WikiContent from '@/components/wiki/WikiContent';
 
-export default function WikiPage() {
-    return (
-        <div className="coming-soon-page">
-            <div className="coming-soon-container">
-                <div className="coming-soon-seal">
-                    <div className="seal-icon">📜</div>
-                    <div className="seal-border"></div>
-                </div>
-                <h1 className="coming-soon-title">Вики пока недоступна</h1>
-                <p className="coming-soon-text">
-                    Мы работаем над документацией сервера. Следите за новостями в Discord!
-                </p>
-                <div className="coming-soon-actions">
-                    <Link href="/" className="btn secondary">
-                        ← На главную
-                    </Link>
-                    <a href="https://dsc.gg/sylvaire" target="_blank" rel="noopener" className="btn primary">
-                        Discord
-                    </a>
-                </div>
+export default function WikiHomePage() {
+    const router = useRouter();
+    const { loading, loadPage, pages } = useWiki();
+
+    useEffect(() => {
+        if (!loading) {
+            // Load home page or redirect to first page
+            const homePage = pages.find(p => p.id === 'home');
+            if (homePage) {
+                loadPage('home');
+            } else if (pages.length > 0) {
+                router.replace(`/wiki/${pages[0].id}`);
+            }
+        }
+    }, [loading, pages, loadPage, router]);
+
+    if (loading) {
+        return (
+            <div className="wiki-content-loading">
+                <div className="wiki-loading-spinner" />
+                <p>Загрузка Wiki...</p>
             </div>
-        </div>
-    );
+        );
+    }
+
+    return <WikiContent pageId="home" />;
 }
