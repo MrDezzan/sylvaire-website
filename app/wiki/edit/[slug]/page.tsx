@@ -62,11 +62,11 @@ export default function WikiEditPage({ params }: EditPageProps) {
         setSaving(true);
         try {
             // Update content
-            updatePageContent(slug, content);
+            await updatePageContent(slug, content);
 
             // Update meta if changed
             if (title !== currentPage.title || category !== (currentPage.category || '')) {
-                updatePageMeta(slug, {
+                await updatePageMeta(slug, {
                     title,
                     category: category || undefined
                 });
@@ -84,8 +84,8 @@ export default function WikiEditPage({ params }: EditPageProps) {
         router.push(`/wiki/${slug}`);
     };
 
-    const handleDelete = () => {
-        if (removePage(slug)) {
+    const handleDelete = async () => {
+        if (await removePage(slug)) {
             router.push('/wiki');
         }
     };

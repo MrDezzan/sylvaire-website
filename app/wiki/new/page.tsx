@@ -43,7 +43,7 @@ export default function WikiNewPage() {
     const handleSave = async (finalContent: string) => {
         setSaving(true);
         try {
-            const newPage = createPage(
+            const newPage = await createPage(
                 title,
                 finalContent,
                 parentId || undefined,
