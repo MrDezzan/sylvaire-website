@@ -15,7 +15,7 @@ function renderMarkdown(content: string): string {
     // Process GitBook-style blocks BEFORE escaping HTML
 
     // Hint blocks
-    html = html.replace(/{% hint style="(\w+)" %}([\s\S]*?){% endhint %}/g, (_, style, text) => {
+    html = html.replace(/{%\s*hint\s+style="(\w+)"\s*%}([\s\S]*?){%\s*endhint\s*%}/g, (_, style, text) => {
         const icons: Record<string, string> = { info: 'ℹ️', warning: '⚠️', success: '✅', danger: '🚫' };
         return `<div class="wiki-hint-block ${style}"><span class="wiki-hint-icon">${icons[style] || 'ℹ️'}</span><div>${text.trim()}</div></div>`;
     });

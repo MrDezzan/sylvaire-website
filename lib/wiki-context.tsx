@@ -3,16 +3,14 @@
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import {
     WikiPage,
-    getAllPages,
-    getPage,
-    getPageTree,
-    getChildPages,
-    createPage as storageCreatePage,
-    updatePage as storageUpdatePage,
-    deletePage as storageDeletePage,
-    searchPages as storageSearchPages,
-    generateSlug,
+    fetchWiki,
+    apiCreatePage,
+    apiUpdatePage,
+    apiDeletePage,
+    buildPageTree,
+    getChildren as getChildPages,
     getNavigation,
+    generateSlug
 } from './wiki-storage';
 import { useAuth } from './auth-context';
 
@@ -37,15 +35,15 @@ interface WikiContextType {
 
     // Admin actions
     canEdit: boolean;
-    createPage: (title: string, content: string, parentId?: string, icon?: string, category?: string) => WikiPage | null;
-    updatePageContent: (id: string, content: string) => boolean;
-    updatePageMeta: (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }) => boolean;
-    removePage: (id: string) => boolean;
+    createPage: (title: string, content: string, parentId?: string, icon?: string, category?: string) => Promise<WikiPage | null>;
+    updatePageContent: (id: string, content: string) => Promise<boolean>;
+    updatePageMeta: (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }) => Promise<boolean>;
+    removePage: (id: string) => Promise<boolean>;
 
     // Utils
     loadPage: (id: string) => void;
     getChildren: (parentId: string) => WikiPage[];
-    refresh: () => void;
+    refresh: () => Promise<void>;
 }
 
 const WikiContext = createContext<WikiContextType | null>(null);
@@ -71,58 +69,71 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
     const canEdit = isAdmin || canManageTags || (user ? WIKI_EDITORS.includes(user.username) : false);
 
     // Load all pages
-    const refresh = useCallback(() => {
+    const refresh = useCallback(async () => {
         setLoading(true);
         try {
-            const allPages = getAllPages();
-            const tree = getPageTree();
+            const allPages = await fetchWiki();
+            const tree = buildPageTree(allPages);
             setPages(allPages);
             setPageTree(tree);
+
+            // If we have a current page, refresh its data reference from the new list
+            if (currentPage) {
+                const refreshedPage = allPages.find(p => p.id === currentPage.id);
+                if (refreshedPage) {
+                    setCurrentPage(refreshedPage);
+                    setNavigation(getNavigation(allPages, refreshedPage.id));
+                }
+            }
         } catch (e) {
             console.error('[Wiki] Failed to load pages:', e);
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [currentPage]);
 
-    // Load specific page
+    // Load specific page (synchronous lookup from loaded pages)
     const loadPage = useCallback((id: string) => {
-        const page = getPage(id);
+        const page = pages.find(p => p.id === id) || null;
         setCurrentPage(page);
 
         if (page) {
-            setNavigation(getNavigation(id));
+            setNavigation(getNavigation(pages, id));
         } else {
             setNavigation({ prev: null, next: null });
         }
-    }, []);
+    }, [pages]);
 
     // Get children of a page
     const getChildren = useCallback((parentId: string) => {
-        return getChildPages(parentId);
-    }, []);
+        return getChildPages(pages, parentId);
+    }, [pages]);
 
     // Search effect
     useEffect(() => {
-        if (searchQuery.trim()) {
-            const results = storageSearchPages(searchQuery);
+        if (searchQuery.trim() && pages.length > 0) {
+            const lowerQuery = searchQuery.toLowerCase();
+            const results = pages.filter(page =>
+                page.title.toLowerCase().includes(lowerQuery) ||
+                page.content.toLowerCase().includes(lowerQuery)
+            );
             setSearchResults(results);
         } else {
             setSearchResults([]);
         }
-    }, [searchQuery]);
+    }, [searchQuery, pages]);
 
     // Initial load
     useEffect(() => {
         refresh();
-    }, [refresh]);
+    }, []); // Run once on mount
 
-    // Load initial page if provided
+    // Load initial page if provided and pages are loaded
     useEffect(() => {
-        if (initialPageId && !loading) {
+        if (initialPageId && !loading && pages.length > 0) {
             loadPage(initialPageId);
         }
-    }, [initialPageId, loading, loadPage]);
+    }, [initialPageId, loading, pages.length, loadPage]);
 
     // Keyboard shortcut for search
     useEffect(() => {
@@ -142,42 +153,39 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
     }, []);
 
     // Admin actions
-    const createPage = useCallback((title: string, content: string, parentId?: string, icon?: string, category?: string): WikiPage | null => {
+    const createPage = useCallback(async (title: string, content: string, parentId?: string, icon?: string, category?: string): Promise<WikiPage | null> => {
         if (!canEdit || !user) return null;
 
         try {
-            const slug = generateSlug(title);
-            const maxOrder = Math.max(...pages.map(p => p.order), -1);
+            const slug = generateSlug(title, pages);
 
-            const newPage = storageCreatePage({
+            const newPage = await apiCreatePage({
                 id: slug,
                 title,
                 content,
                 parentId,
                 icon,
                 category,
-                order: maxOrder + 1,
-                createdBy: user.username,
             });
 
-            refresh();
-            return newPage;
+            if (newPage) {
+                await refresh();
+                return newPage;
+            }
+            return null;
         } catch (e) {
             console.error('[Wiki] Failed to create page:', e);
             return null;
         }
     }, [canEdit, user, pages, refresh]);
 
-    const updatePageContent = useCallback((id: string, content: string): boolean => {
+    const updatePageContent = useCallback(async (id: string, content: string): Promise<boolean> => {
         if (!canEdit) return false;
 
         try {
-            const updated = storageUpdatePage(id, { content });
+            const updated = await apiUpdatePage(id, { content });
             if (updated) {
-                refresh();
-                if (currentPage?.id === id) {
-                    setCurrentPage(updated);
-                }
+                await refresh();
                 return true;
             }
             return false;
@@ -185,18 +193,15 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
             console.error('[Wiki] Failed to update page content:', e);
             return false;
         }
-    }, [canEdit, currentPage, refresh]);
+    }, [canEdit, refresh]);
 
-    const updatePageMeta = useCallback((id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }): boolean => {
+    const updatePageMeta = useCallback(async (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }): Promise<boolean> => {
         if (!canEdit) return false;
 
         try {
-            const updated = storageUpdatePage(id, updates);
+            const updated = await apiUpdatePage(id, updates);
             if (updated) {
-                refresh();
-                if (currentPage?.id === id) {
-                    setCurrentPage(updated);
-                }
+                await refresh();
                 return true;
             }
             return false;
@@ -204,9 +209,9 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
             console.error('[Wiki] Failed to update page meta:', e);
             return false;
         }
-    }, [canEdit, currentPage, refresh]);
+    }, [canEdit, refresh]);
 
-    const removePage = useCallback((id: string): boolean => {
+    const removePage = useCallback(async (id: string): Promise<boolean> => {
         if (!canEdit) return false;
 
         // Don't allow deleting home page
@@ -216,9 +221,9 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
         }
 
         try {
-            const deleted = storageDeletePage(id);
-            if (deleted) {
-                refresh();
+            const success = await apiDeletePage(id);
+            if (success) {
+                await refresh();
                 if (currentPage?.id === id) {
                     setCurrentPage(null);
                 }

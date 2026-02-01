@@ -1,6 +1,5 @@
 /**
- * Wiki Storage - LocalStorage-based storage for wiki pages
- * Can be migrated to backend API later
+ * Wiki Storage - API-based storage for wiki pages
  */
 
 export interface WikiPage {
@@ -18,301 +17,102 @@ export interface WikiPage {
 
 export interface WikiStructure {
     pages: WikiPage[];
-    version: number;      // For future migrations
+    version: number;
 }
 
-const STORAGE_KEY = 'sylvaire_wiki';
-const CURRENT_VERSION = 1;
-
-// Default wiki content
-const DEFAULT_WIKI: WikiStructure = {
-    version: CURRENT_VERSION,
-    pages: [
-        {
-            id: 'home',
-            title: 'Добро пожаловать',
-            content: `# Добро пожаловать в Wiki Sylvaire!
-
-Это официальная документация сервера Sylvaire. Здесь вы найдёте всю необходимую информацию для комфортной игры.
-
-## 🚀 Начало работы
-
-- Ознакомьтесь с [правилами сервера](/wiki/rules)
-- Изучите [гайд для новичков](/wiki/getting-started)
-- Присоединяйтесь к нашему [Discord](https://dsc.gg/sylvaire)
-
-## 📚 Разделы
-
-Используйте боковое меню для навигации по разделам документации.
-
-> **Совет:** Нажмите \`Ctrl+K\` для быстрого поиска по wiki.
-`,
-            order: 0,
-            category: 'Главная',
-            icon: '🏠',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            createdBy: 'System',
-        },
-        {
-            id: 'getting-started',
-            title: 'Начало игры',
-            content: `# Начало игры
-
-## Как подключиться
-
-1. Откройте Minecraft версии **1.21.8**
-2. Добавьте сервер: \`play.sylvaire.ru\`
-3. Подключитесь и начните приключение!
-
-## Первые шаги
-
-После входа на сервер вы окажетесь в спавне. Отсюда вы можете:
-
-- Изучить основные команды
-- Найти место для постройки
-- Познакомиться с другими игроками
-
-## Полезные команды
-
-| Команда | Описание |
-|---------|----------|
-| \`/spawn\` | Телепорт на спавн |
-| \`/sethome\` | Установить точку дома |
-| \`/home\` | Телепорт домой |
-| \`/tpa <ник>\` | Запрос на телепорт к игроку |
-`,
-            parentId: 'home',
-            order: 1,
-            category: 'Гайды',
-            icon: '🎮',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            createdBy: 'System',
-        },
-        {
-            id: 'rules',
-            title: 'Правила сервера',
-            content: `# Правила сервера
-
-## Общие правила
-
-1. **Уважайте других игроков** — оскорбления, токсичность и троллинг запрещены
-2. **Не используйте читы** — любые модификации, дающие преимущество, запрещены
-3. **Не гриферьте** — разрушение чужих построек карается баном
-4. **Играйте честно** — дюпы, эксплойты и баги использовать нельзя
-
-## Правила чата
-
-- Не спамьте
-- Не рекламируйте другие сервера
-- Используйте русский или английский язык
-- Не просите привилегии у администрации
-
-## Наказания
-
-| Нарушение | Наказание |
-|-----------|-----------|
-| Первое предупреждение | Мут 30 минут |
-| Повторное нарушение | Мут 24 часа |
-| Грифинг | Бан от 7 дней |
-| Читы | Перманентный бан |
-
-> Администрация оставляет за собой право изменять наказания в зависимости от тяжести нарушения.
-`,
-            parentId: 'home',
-            order: 2,
-            category: 'Информация',
-            icon: '📜',
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-            createdBy: 'System',
-        },
-    ],
-};
-
 /**
- * Get wiki structure from storage
+ * Fetch all pages from API
  */
-export function getWikiStructure(): WikiStructure {
-    if (typeof window === 'undefined') {
-        return DEFAULT_WIKI;
-    }
-
+export async function fetchWiki(): Promise<WikiPage[]> {
     try {
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-            const data = JSON.parse(stored) as WikiStructure;
-            // Migration logic can be added here based on version
-            return data;
-        }
+        const res = await fetch('/api/wiki', { cache: 'no-store' });
+        if (!res.ok) throw new Error('Failed to fetch wiki');
+        const data = await res.json();
+        return data.pages || [];
     } catch (e) {
-        console.error('[Wiki] Failed to load wiki structure:', e);
+        console.error('[Wiki] API Fetch Error:', e);
+        return [];
     }
-
-    // Initialize with default content
-    saveWikiStructure(DEFAULT_WIKI);
-    return DEFAULT_WIKI;
 }
 
 /**
- * Save wiki structure to storage
+ * Create a new page via API
  */
-export function saveWikiStructure(structure: WikiStructure): void {
-    if (typeof window === 'undefined') return;
-
+export async function apiCreatePage(page: Omit<WikiPage, 'createdAt' | 'updatedAt' | 'order' | 'createdBy'>): Promise<WikiPage | null> {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(structure));
+        const res = await fetch('/api/wiki', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(page),
+        });
+        if (!res.ok) throw new Error('Failed to create page');
+        return await res.json();
     } catch (e) {
-        console.error('[Wiki] Failed to save wiki structure:', e);
+        console.error('[Wiki] API Create Error:', e);
+        return null;
     }
 }
 
 /**
- * Get all pages
+ * Update a page via API
  */
-export function getAllPages(): WikiPage[] {
-    return getWikiStructure().pages;
+export async function apiUpdatePage(id: string, updates: Partial<WikiPage>): Promise<WikiPage | null> {
+    try {
+        const res = await fetch(`/api/wiki/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updates),
+        });
+        if (!res.ok) throw new Error('Failed to update page');
+        return await res.json();
+    } catch (e) {
+        console.error('[Wiki] API Update Error:', e);
+        return null;
+    }
 }
 
 /**
- * Get a single page by ID (slug)
+ * Delete a page via API
  */
-export function getPage(id: string): WikiPage | null {
-    const pages = getAllPages();
-    return pages.find(p => p.id === id) || null;
+export async function apiDeletePage(id: string): Promise<boolean> {
+    try {
+        const res = await fetch(`/api/wiki/${id}`, {
+            method: 'DELETE',
+        });
+        return res.ok;
+    } catch (e) {
+        console.error('[Wiki] API Delete Error:', e);
+        return false;
+    }
 }
 
-/**
- * Get pages organized by hierarchy
- */
-export function getPageTree(): WikiPage[] {
-    const pages = getAllPages();
+// ------------------------------------------------------------------
+// Local Helper Functions (Client-side logic for tree/nav generation)
+// ------------------------------------------------------------------
 
+/**
+ * Get pages organized by hierarchy (requires pages to be passed in)
+ */
+export function buildPageTree(pages: WikiPage[]): WikiPage[] {
     // Get root pages (no parent or parent is undefined)
-    const rootPages = pages
+    return pages
         .filter(p => !p.parentId)
         .sort((a, b) => a.order - b.order);
-
-    return rootPages;
 }
 
 /**
- * Get child pages for a parent
+ * Get child pages for a parent (requires pages to be passed in)
  */
-export function getChildPages(parentId: string): WikiPage[] {
-    const pages = getAllPages();
+export function getChildren(pages: WikiPage[], parentId: string): WikiPage[] {
     return pages
         .filter(p => p.parentId === parentId)
         .sort((a, b) => a.order - b.order);
 }
 
 /**
- * Create a new page
+ * Generate a unique slug from title (Client-side suggestion, server validates)
  */
-export function createPage(page: Omit<WikiPage, 'createdAt' | 'updatedAt'>): WikiPage {
-    const structure = getWikiStructure();
-
-    // Check if ID already exists
-    if (structure.pages.some(p => p.id === page.id)) {
-        throw new Error(`Page with ID "${page.id}" already exists`);
-    }
-
-    const now = new Date().toISOString();
-    const newPage: WikiPage = {
-        ...page,
-        createdAt: now,
-        updatedAt: now,
-    };
-
-    structure.pages.push(newPage);
-    saveWikiStructure(structure);
-
-    return newPage;
-}
-
-/**
- * Update an existing page
- */
-export function updatePage(id: string, updates: Partial<Omit<WikiPage, 'id' | 'createdAt'>>): WikiPage | null {
-    const structure = getWikiStructure();
-    const pageIndex = structure.pages.findIndex(p => p.id === id);
-
-    if (pageIndex === -1) {
-        return null;
-    }
-
-    const updatedPage: WikiPage = {
-        ...structure.pages[pageIndex],
-        ...updates,
-        updatedAt: new Date().toISOString(),
-    };
-
-    structure.pages[pageIndex] = updatedPage;
-    saveWikiStructure(structure);
-
-    return updatedPage;
-}
-
-/**
- * Delete a page
- */
-export function deletePage(id: string): boolean {
-    const structure = getWikiStructure();
-    const pageIndex = structure.pages.findIndex(p => p.id === id);
-
-    if (pageIndex === -1) {
-        return false;
-    }
-
-    // Also update children to remove parent reference
-    structure.pages.forEach(p => {
-        if (p.parentId === id) {
-            p.parentId = undefined;
-        }
-    });
-
-    structure.pages.splice(pageIndex, 1);
-    saveWikiStructure(structure);
-
-    return true;
-}
-
-/**
- * Reorder pages
- */
-export function reorderPages(pageIds: string[]): void {
-    const structure = getWikiStructure();
-
-    pageIds.forEach((id, index) => {
-        const page = structure.pages.find(p => p.id === id);
-        if (page) {
-            page.order = index;
-        }
-    });
-
-    saveWikiStructure(structure);
-}
-
-/**
- * Search pages by title and content
- */
-export function searchPages(query: string): WikiPage[] {
-    if (!query.trim()) return [];
-
-    const pages = getAllPages();
-    const lowerQuery = query.toLowerCase();
-
-    return pages.filter(page =>
-        page.title.toLowerCase().includes(lowerQuery) ||
-        page.content.toLowerCase().includes(lowerQuery)
-    );
-}
-
-/**
- * Generate a unique slug from title
- */
-export function generateSlug(title: string): string {
+export function generateSlug(title: string, existingPages: WikiPage[]): string {
     const translitMap: Record<string, string> = {
         'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo',
         'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm',
@@ -334,11 +134,10 @@ export function generateSlug(title: string): string {
         .replace(/^-|-$/g, '');
 
     // Ensure uniqueness
-    const pages = getAllPages();
     let uniqueSlug = slug;
     let counter = 1;
 
-    while (pages.some(p => p.id === uniqueSlug)) {
+    while (existingPages.some(p => p.id === uniqueSlug)) {
         uniqueSlug = `${slug}-${counter}`;
         counter++;
     }
@@ -349,12 +148,12 @@ export function generateSlug(title: string): string {
 /**
  * Get navigation structure for prev/next
  */
-export function getNavigation(currentId: string): { prev: WikiPage | null; next: WikiPage | null } {
-    const pages = getAllPages().sort((a, b) => a.order - b.order);
-    const currentIndex = pages.findIndex(p => p.id === currentId);
+export function getNavigation(pages: WikiPage[], currentId: string): { prev: WikiPage | null; next: WikiPage | null } {
+    const sorted = [...pages].sort((a, b) => a.order - b.order);
+    const currentIndex = sorted.findIndex(p => p.id === currentId);
 
     return {
-        prev: currentIndex > 0 ? pages[currentIndex - 1] : null,
-        next: currentIndex < pages.length - 1 ? pages[currentIndex + 1] : null,
+        prev: currentIndex > 0 ? sorted[currentIndex - 1] : null,
+        next: currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null,
     };
 }

@@ -212,7 +212,7 @@ export default function WikiEditor({ initialContent, onSave, onCancel, saving = 
             .replace(/>/g, '&gt;');
 
         // Hints
-        html = html.replace(/{% hint style="(\w+)" %}([\s\S]*?){% endhint %}/g, (_, style, content) => {
+        html = html.replace(/{%\s*hint\s+style="(\w+)"\s*%}([\s\S]*?){%\s*endhint\s*%}/g, (_, style, content) => {
             const icons: Record<string, string> = { info: 'ℹ️', warning: '⚠️', success: '✅', danger: '🚫' };
             return `<div class="wiki-hint-block ${style}"><span class="wiki-hint-icon">${icons[style] || 'ℹ️'}</span><div>${content.trim()}</div></div>`;
         });
