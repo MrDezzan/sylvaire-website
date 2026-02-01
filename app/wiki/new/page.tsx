@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWiki } from '@/lib/wiki-context';
 import WikiEditor from '@/components/wiki/WikiEditor';
+import EmojiPicker from '@/components/wiki/EmojiPicker';
 
 export default function WikiNewPage() {
     const router = useRouter();
@@ -85,28 +86,18 @@ export default function WikiNewPage() {
                     <div className="wiki-new-form">
                         <div className="wiki-edit-setting-group">
                             <label htmlFor="new-title">Заголовок страницы *</label>
-                            <input
-                                id="new-title"
-                                type="text"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                className="wiki-edit-input"
-                                placeholder="Введите заголовок..."
-                                autoFocus
-                            />
-                        </div>
-
-                        <div className="wiki-edit-setting-group">
-                            <label htmlFor="new-icon">Иконка (emoji)</label>
-                            <input
-                                id="new-icon"
-                                type="text"
-                                value={icon}
-                                onChange={(e) => setIcon(e.target.value)}
-                                className="wiki-edit-input"
-                                placeholder="📄"
-                                maxLength={2}
-                            />
+                            <div className="wiki-edit-title-row">
+                                <EmojiPicker value={icon} onChange={setIcon} />
+                                <input
+                                    id="new-title"
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className="wiki-edit-input"
+                                    placeholder="Введите заголовок..."
+                                    autoFocus
+                                />
+                            </div>
                         </div>
 
                         <div className="wiki-edit-setting-group">

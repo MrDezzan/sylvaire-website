@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useWiki } from '@/lib/wiki-context';
+import WikiPageCards from './WikiPageCards';
 
 interface WikiContentProps {
     pageId: string;
@@ -37,8 +38,8 @@ function renderMarkdown(content: string): string {
     html = html.replace(/\[([^\]]+)\]\((https?:\/\/[^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="wiki-link external">$1</a>');
 
     // Blockquotes
-    html = html.replace(/^> \*\*(.+?)\*\* (.+)$/gm, '<blockquote class="wiki-blockquote"><strong>$1</strong> $2</blockquote>');
-    html = html.replace(/^> (.+)$/gm, '<blockquote class="wiki-blockquote">$1</blockquote>');
+    html = html.replace(/^&gt; \*\*(.+?)\*\* (.+)$/gm, '<blockquote class="wiki-blockquote"><strong>$1</strong> $2</blockquote>');
+    html = html.replace(/^&gt; (.+)$/gm, '<blockquote class="wiki-blockquote">$1</blockquote>');
 
     // Tables
     html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
@@ -79,7 +80,7 @@ function renderMarkdown(content: string): string {
 }
 
 export default function WikiContent({ pageId }: WikiContentProps) {
-    const { currentPage, navigation, canEdit, loading } = useWiki();
+    const { currentPage, navigation, canEdit, loading, getChildren } = useWiki();
 
     if (loading) {
         return (
@@ -104,6 +105,7 @@ export default function WikiContent({ pageId }: WikiContentProps) {
     }
 
     const renderedContent = renderMarkdown(currentPage.content);
+    const childPages = getChildren(currentPage.id);
 
     return (
         <article className="wiki-content">
@@ -129,6 +131,11 @@ export default function WikiContent({ pageId }: WikiContentProps) {
                 className="wiki-content-body"
                 dangerouslySetInnerHTML={{ __html: renderedContent }}
             />
+
+            {/* Child pages displayed as cards like GitBook */}
+            {childPages.length > 0 && (
+                <WikiPageCards pages={childPages} />
+            )}
 
             <footer className="wiki-content-footer">
                 <div className="wiki-content-updated">

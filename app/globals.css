@@ -7373,7 +7373,7 @@ body {
   display: flex;
   min-height: calc(100vh - 64px);
   background: var(--bg);
-  padding-top: 64px;
+  margin-top: 64px;
 }
 
 .wiki-main {
@@ -7381,6 +7381,7 @@ body {
   margin-left: 280px;
   min-height: calc(100vh - 64px);
   padding: 40px;
+  padding-top: 32px;
   max-width: 900px;
 }
 
@@ -8288,5 +8289,240 @@ body {
 
   .wiki-editor-hint {
     display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WIKI - Emoji Picker Component
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.emoji-picker-container {
+  position: relative;
+}
+
+.emoji-picker-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.emoji-picker-trigger:hover {
+  border-color: var(--accent);
+  background: var(--bg-card-hover);
+}
+
+.emoji-picker-current {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.emoji-picker-arrow {
+  font-size: 10px;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.emoji-picker-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 1000;
+  width: 320px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: fadeIn 0.15s ease;
+}
+
+.emoji-picker-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.emoji-category-btn {
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.emoji-category-btn:hover {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.emoji-category-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.emoji-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+  padding: 12px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.emoji-picker-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.emoji-picker-item:hover {
+  background: var(--bg-card-hover);
+  transform: scale(1.1);
+}
+
+.emoji-picker-item.selected {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.2);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WIKI - Page Cards Component (GitBook-style)
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wiki-page-cards {
+  margin-top: 40px;
+}
+
+.wiki-page-cards-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.wiki-page-cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wiki-page-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.wiki-page-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+  transform: translateX(4px);
+}
+
+.wiki-page-card-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.wiki-page-card-title {
+  flex: 1;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.wiki-page-card-action {
+  padding: 6px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.wiki-page-card:hover .wiki-page-card-action {
+  border-color: var(--accent);
+  color: var(--accent-light);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WIKI - Title Row with Emoji
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wiki-edit-title-row {
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+}
+
+.wiki-edit-title-row .wiki-edit-input {
+  flex: 1;
+}
+
+.wiki-edit-title-row .emoji-picker-trigger {
+  height: 100%;
+}
+
+/* Mobile adjustments for page cards */
+@media (max-width: 768px) {
+  .wiki-page-card {
+    padding: 14px 16px;
+  }
+
+  .wiki-page-card-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .wiki-page-card-action {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .emoji-picker-dropdown {
+    width: 280px;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .emoji-picker-grid {
+    grid-template-columns: repeat(5, 1fr);
   }
 }

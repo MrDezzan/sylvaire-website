@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWiki } from '@/lib/wiki-context';
 import WikiEditor from '@/components/wiki/WikiEditor';
+import EmojiPicker from '@/components/wiki/EmojiPicker';
 
 interface EditPageProps {
     params: Promise<{ slug: string }>;
@@ -111,25 +112,17 @@ export default function WikiEditPage({ params }: EditPageProps) {
                 <div className="wiki-edit-settings">
                     <div className="wiki-edit-setting-group">
                         <label htmlFor="page-title">Заголовок</label>
-                        <input
-                            id="page-title"
-                            type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
-                            className="wiki-edit-input"
-                        />
-                    </div>
-                    <div className="wiki-edit-setting-group">
-                        <label htmlFor="page-icon">Иконка (emoji)</label>
-                        <input
-                            id="page-icon"
-                            type="text"
-                            value={icon}
-                            onChange={(e) => setIcon(e.target.value)}
-                            className="wiki-edit-input"
-                            placeholder="📄"
-                            maxLength={2}
-                        />
+                        <div className="wiki-edit-title-row">
+                            <EmojiPicker value={icon || '📄'} onChange={setIcon} />
+                            <input
+                                id="page-title"
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="wiki-edit-input"
+                                placeholder="Название страницы..."
+                            />
+                        </div>
                     </div>
                     {slug !== 'home' && (
                         <div className="wiki-edit-setting-group danger">
