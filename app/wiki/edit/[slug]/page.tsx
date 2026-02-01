@@ -4,7 +4,6 @@ import { useEffect, useState, use } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWiki } from '@/lib/wiki-context';
-import { useAuth } from '@/lib/auth-context';
 import WikiEditor from '@/components/wiki/WikiEditor';
 
 interface EditPageProps {
@@ -14,7 +13,6 @@ interface EditPageProps {
 export default function WikiEditPage({ params }: EditPageProps) {
     const { slug } = use(params);
     const router = useRouter();
-    const { isAdmin } = useAuth();
     const { currentPage, loadPage, updatePageContent, updatePageMeta, removePage, canEdit, loading } = useWiki();
     const [saving, setSaving] = useState(false);
     const [showSettings, setShowSettings] = useState(false);
@@ -33,12 +31,12 @@ export default function WikiEditPage({ params }: EditPageProps) {
         }
     }, [currentPage]);
 
-    // Redirect if not admin
+    // Redirect if cannot edit
     useEffect(() => {
-        if (!loading && !isAdmin) {
+        if (!loading && !canEdit) {
             router.replace(`/wiki/${slug}`);
         }
-    }, [loading, isAdmin, router, slug]);
+    }, [loading, canEdit, router, slug]);
 
     if (loading || !canEdit) {
         return (

@@ -4,13 +4,11 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useWiki } from '@/lib/wiki-context';
-import { useAuth } from '@/lib/auth-context';
 import WikiEditor from '@/components/wiki/WikiEditor';
 
 export default function WikiNewPage() {
     const router = useRouter();
-    const { isAdmin, loading: authLoading } = useAuth();
-    const { createPage, pages, canEdit, loading: wikiLoading } = useWiki();
+    const { createPage, pages, canEdit, loading } = useWiki();
     const [saving, setSaving] = useState(false);
     const [title, setTitle] = useState('');
     const [icon, setIcon] = useState('📄');
@@ -18,14 +16,14 @@ export default function WikiNewPage() {
     const [step, setStep] = useState<'meta' | 'content'>('meta');
     const [content, setContent] = useState('# Новая страница\n\nНачните писать здесь...');
 
-    // Redirect if not admin
+    // Redirect if cannot edit
     useEffect(() => {
-        if (!authLoading && !wikiLoading && !isAdmin) {
+        if (!loading && !canEdit) {
             router.replace('/wiki');
         }
-    }, [authLoading, wikiLoading, isAdmin, router]);
+    }, [loading, canEdit, router]);
 
-    if (authLoading || wikiLoading || !canEdit) {
+    if (loading || !canEdit) {
         return (
             <div className="wiki-content-loading">
                 <div className="wiki-loading-spinner" />

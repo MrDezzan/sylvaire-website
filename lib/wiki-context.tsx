@@ -50,8 +50,11 @@ interface WikiContextType {
 
 const WikiContext = createContext<WikiContextType | null>(null);
 
+// Users who can always edit wiki
+const WIKI_EDITORS = ['IDezzan'];
+
 export function WikiProvider({ children, initialPageId }: { children: ReactNode; initialPageId?: string }) {
-    const { user, isAdmin } = useAuth();
+    const { user, isAdmin, canManageTags } = useAuth();
 
     const [pages, setPages] = useState<WikiPage[]>([]);
     const [pageTree, setPageTree] = useState<WikiPage[]>([]);
@@ -64,8 +67,8 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
     const [searchResults, setSearchResults] = useState<WikiPage[]>([]);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
 
-    // Can edit if user is admin
-    const canEdit = isAdmin;
+    // Can edit if user is admin, can manage tags, or is in the editors list
+    const canEdit = isAdmin || canManageTags || (user ? WIKI_EDITORS.includes(user.username) : false);
 
     // Load all pages
     const refresh = useCallback(() => {
