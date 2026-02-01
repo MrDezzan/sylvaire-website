@@ -25,7 +25,9 @@ export async function PUT(
     try {
         const p = await params;
         const slug = p.slug;
+        console.log(`[API PUT] Updating slug: ${slug}`);
         const body = await request.json();
+        console.log('[API PUT] Body:', body);
         const data = await getWikiData();
         const pageIndex = data.pages.findIndex((p: any) => p.id === slug);
 
@@ -45,10 +47,13 @@ export async function PUT(
         }
 
         data.pages[pageIndex] = updatedPage;
+        console.log('[API PUT] Saving data...');
         await saveWikiData(data);
+        console.log('[API PUT] Saved successfully');
 
         return NextResponse.json(updatedPage);
     } catch (error) {
+        console.error('[API PUT] Error:', error);
         return NextResponse.json({ error: 'Failed to update page' }, { status: 500 });
     }
 }

@@ -33,6 +33,7 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
+        console.log('[API POST] Received body:', body);
         const { id, title, content, parentId, category, icon } = body;
 
         if (!id || !title || !content) {
@@ -60,10 +61,13 @@ export async function POST(request: Request) {
         };
 
         data.pages.push(newPage);
+        console.log('[API POST] Saving data...');
         await saveWikiData(data);
+        console.log('[API POST] Saved successfully');
 
         return NextResponse.json(newPage);
     } catch (error) {
+        console.error('[API POST] Error:', error);
         return NextResponse.json({ error: 'Failed to create page' }, { status: 500 });
     }
 }

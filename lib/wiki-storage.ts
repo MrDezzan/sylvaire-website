@@ -45,7 +45,11 @@ export async function apiCreatePage(page: Omit<WikiPage, 'createdAt' | 'updatedA
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(page),
         });
-        if (!res.ok) throw new Error('Failed to create page');
+        if (!res.ok) {
+            const text = await res.text();
+            console.error(`[Wiki] API Create Failed: ${res.status} ${res.statusText}`, text);
+            throw new Error(`Failed to create page: ${res.status} ${text}`);
+        }
         return await res.json();
     } catch (e) {
         console.error('[Wiki] API Create Error:', e);
@@ -63,7 +67,11 @@ export async function apiUpdatePage(id: string, updates: Partial<WikiPage>): Pro
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updates),
         });
-        if (!res.ok) throw new Error('Failed to update page');
+        if (!res.ok) {
+            const text = await res.text();
+            console.error(`[Wiki] API Update Failed: ${res.status} ${res.statusText}`, text);
+            throw new Error(`Failed to update page: ${res.status} ${text}`);
+        }
         return await res.json();
     } catch (e) {
         console.error('[Wiki] API Update Error:', e);
