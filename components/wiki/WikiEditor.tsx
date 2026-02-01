@@ -41,9 +41,21 @@ const BLOCK_TYPES = [
     { id: 'codeblock', label: 'Блок кода', icon: '{ }', description: 'Многострочный код' },
     { id: 'table', label: 'Таблица', icon: '▦', description: 'Таблица с колонками' },
     { id: 'image', label: 'Изображение', icon: '🖼️', description: 'Вставить изображение по URL' },
+    { id: 'gif', label: 'GIF', icon: '🎞️', description: 'Вставить GIF-анимацию по URL' },
     { id: 'divider', label: 'Разделитель', icon: '—', description: 'Горизонтальная линия' },
     { id: 'tabs', label: 'Вкладки', icon: '📑', description: 'Контент с вкладками' },
     { id: 'expandable', label: 'Раскрывающийся', icon: '▼', description: 'Скрытый контент' },
+];
+
+// Text color presets
+const TEXT_COLORS = [
+    { id: 'red', label: 'Красный', color: '#ef4444' },
+    { id: 'orange', label: 'Оранжевый', color: '#f97316' },
+    { id: 'yellow', label: 'Жёлтый', color: '#eab308' },
+    { id: 'green', label: 'Зелёный', color: '#22c55e' },
+    { id: 'blue', label: 'Синий', color: '#3b82f6' },
+    { id: 'purple', label: 'Фиолетовый', color: '#a855f7' },
+    { id: 'pink', label: 'Розовый', color: '#ec4899' },
 ];
 
 export default function WikiEditor({ initialContent, onSave, onCancel, saving = false }: WikiEditorProps) {
@@ -52,6 +64,7 @@ export default function WikiEditor({ initialContent, onSave, onCancel, saving = 
     const [showPreview, setShowPreview] = useState(false);
     const [showInsertMenu, setShowInsertMenu] = useState(false);
     const [showPageSelector, setShowPageSelector] = useState(false);
+    const [showColorPicker, setShowColorPicker] = useState(false);
     const [insertMenuPosition, setInsertMenuPosition] = useState({ top: 0, left: 0 });
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const insertMenuRef = useRef<HTMLDivElement>(null);
@@ -76,6 +89,7 @@ export default function WikiEditor({ initialContent, onSave, onCancel, saving = 
             if (e.key === 'Escape') {
                 setShowInsertMenu(false);
                 setShowPageSelector(false);
+                setShowColorPicker(false);
             }
         };
         window.addEventListener('keydown', handleKeyDown);
@@ -88,6 +102,7 @@ export default function WikiEditor({ initialContent, onSave, onCancel, saving = 
             if (insertMenuRef.current && !insertMenuRef.current.contains(e.target as Node)) {
                 setShowInsertMenu(false);
                 setShowPageSelector(false);
+                setShowColorPicker(false);
             }
         };
         if (showInsertMenu || showPageSelector) {
@@ -153,6 +168,7 @@ export default function WikiEditor({ initialContent, onSave, onCancel, saving = 
             'codeblock': '\n```javascript\n// Ваш код здесь\n```\n',
             'table': '\n| Заголовок 1 | Заголовок 2 | Заголовок 3 |\n|-------------|-------------|-------------|\n| Ячейка 1    | Ячейка 2    | Ячейка 3    |\n| Ячейка 4    | Ячейка 5    | Ячейка 6    |\n',
             'image': '\n![Описание изображения](URL_ИЗОБРАЖЕНИЯ)\n',
+            'gif': '\n![GIF анимация](URL_GIF_ИЗОБРАЖЕНИЯ)\n',
             'divider': '\n---\n',
             'tabs': '\n{% tabs %}\n{% tab title="Вкладка 1" %}\nКонтент первой вкладки\n{% endtab %}\n{% tab title="Вкладка 2" %}\nКонтент второй вкладки\n{% endtab %}\n{% endtabs %}\n',
             'expandable': '\n<details>\n<summary>Нажмите, чтобы раскрыть</summary>\n\nСкрытый контент здесь\n\n</details>\n',
@@ -260,6 +276,39 @@ export default function WikiEditor({ initialContent, onSave, onCancel, saving = 
                             {tool.icon}
                         </button>
                     ))}
+                </div>
+
+                {/* Text Color Picker */}
+                <div style={{ position: 'relative' }}>
+                    <button
+                        type="button"
+                        className="wiki-toolbar-btn"
+                        onClick={() => setShowColorPicker(!showColorPicker)}
+                        title="Цвет текста"
+                    >
+                        <span style={{ color: '#ef4444' }}>A</span>
+                    </button>
+
+                    {showColorPicker && (
+                        <div className="wiki-color-picker-dropdown" ref={insertMenuRef}>
+                            <div className="wiki-color-picker-header">Цвет текста</div>
+                            <div className="wiki-color-picker-grid">
+                                {TEXT_COLORS.map(colorItem => (
+                                    <button
+                                        key={colorItem.id}
+                                        type="button"
+                                        className="wiki-color-picker-item"
+                                        title={colorItem.label}
+                                        style={{ backgroundColor: colorItem.color }}
+                                        onClick={() => {
+                                            insertAtCursor(`<span style="color: ${colorItem.color}">`, '</span>', true);
+                                            setShowColorPicker(false);
+                                        }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 <div className="wiki-toolbar-divider" />

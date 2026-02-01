@@ -9691,3 +9691,50 @@ body {
   color: var(--text);
   outline: none;
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WIKI - Color Picker
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wiki-color-picker-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  margin-top: 8px;
+  padding: 12px;
+  background: var(--bg-card-solid);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+  min-width: 180px;
+}
+
+.wiki-color-picker-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wiki-color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.wiki-color-picker-item {
+  width: 28px;
+  height: 28px;
+  border: 2px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wiki-color-picker-item:hover {
+  transform: scale(1.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
