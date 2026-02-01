@@ -7368,7 +7368,7 @@ body {
    WIKI SYSTEM - GitBook-style Documentation
    ═══════════════════════════════════════════════════════════════════════════ */
 
-/* Wiki Layout */
+/* Wiki Layout - GitBook Style */
 .wiki-layout {
   display: flex;
   min-height: calc(100vh - 64px);
@@ -7380,22 +7380,32 @@ body {
   flex: 1;
   margin-left: 280px;
   min-height: calc(100vh - 64px);
-  padding: 40px;
-  padding-top: 32px;
-  max-width: 900px;
+  display: flex;
+  flex-direction: column;
 }
 
-@media (max-width: 1200px) {
-  .wiki-main {
+.wiki-main-inner {
+  flex: 1;
+  max-width: 860px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px 40px;
+}
+
+@media (max-width: 1400px) {
+  .wiki-main-inner {
     max-width: 100%;
-    padding: 32px 24px;
+    padding: 40px 48px;
   }
 }
 
 @media (max-width: 768px) {
   .wiki-main {
     margin-left: 0;
-    padding: 24px 16px;
+  }
+
+  .wiki-main-inner {
+    padding: 24px 20px;
     padding-bottom: 80px;
   }
 }
@@ -7619,27 +7629,31 @@ body {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  gap: 24px;
+  margin-bottom: 40px;
 }
 
 .wiki-content-meta {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  align-items: flex-start;
+  gap: 20px;
 }
 
 .wiki-content-icon {
-  font-size: 48px;
+  font-size: 56px;
+  line-height: 1;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
 }
 
 .wiki-content-title {
-  font-size: 36px;
+  font-size: 42px;
   font-weight: 700;
   color: var(--text);
-  line-height: 1.2;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
 }
 
 .wiki-edit-btn {
@@ -8524,5 +8538,473 @@ body {
 
   .emoji-picker-grid {
     grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WIKI - GitBook-Style Editor
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wiki-editor-gitbook {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 300px);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Floating Toolbar */
+.wiki-editor-floating-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  background: linear-gradient(to bottom, var(--bg-secondary), rgba(17, 17, 17, 0.98));
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.wiki-toolbar-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 10px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wiki-toolbar-btn:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.wiki-toolbar-btn:active {
+  transform: scale(0.95);
+}
+
+.wiki-toolbar-btn.preview-btn {
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.wiki-toolbar-btn.preview-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+.wiki-toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border);
+  margin: 0 6px;
+}
+
+.wiki-toolbar-spacer {
+  flex: 1;
+}
+
+/* Editor Content Area */
+.wiki-editor-content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+}
+
+.wiki-editor-textarea-gitbook {
+  flex: 1;
+  min-height: 500px;
+  width: 100%;
+  padding: 32px 40px;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: var(--text);
+  caret-color: var(--accent);
+}
+
+.wiki-editor-textarea-gitbook::placeholder {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.wiki-editor-textarea-gitbook::selection {
+  background: rgba(99, 102, 241, 0.3);
+}
+
+.wiki-editor-preview {
+  flex: 1;
+  min-height: 500px;
+  padding: 32px 40px;
+  overflow-y: auto;
+}
+
+/* Bottom Bar */
+.wiki-editor-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: var(--bg-secondary);
+  border-top: 1px solid var(--border);
+}
+
+.wiki-editor-hints {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wiki-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.wiki-hint kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.wiki-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Mobile adjustments for GitBook editor */
+@media (max-width: 768px) {
+  .wiki-editor-floating-toolbar {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .wiki-editor-textarea-gitbook {
+    padding: 20px;
+    font-size: 15px;
+  }
+
+  .wiki-editor-preview {
+    padding: 20px;
+  }
+
+  .wiki-editor-bottom-bar {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .wiki-editor-hints {
+    display: none;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WIKI - GitBook-Style Edit/New Pages
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.wiki-edit-page-gitbook,
+.wiki-new-page-gitbook {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* GitBook Header */
+.wiki-gitbook-header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.wiki-gitbook-header.compact {
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.wiki-gitbook-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.wiki-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wiki-back-link:hover {
+  background: var(--bg-card);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* Delete zone */
+.wiki-delete-zone {
+  display: flex;
+  align-items: center;
+}
+
+.wiki-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wiki-delete-btn:hover {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.wiki-delete-confirm-inline {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.btn-text {
+  padding: 6px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-text:hover {
+  background: var(--bg-card);
+  color: var(--text);
+}
+
+.btn-text.danger {
+  color: #ef4444;
+}
+
+.btn-text.danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Title Editor */
+.wiki-gitbook-title-editor {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wiki-title-emoji .emoji-picker-trigger {
+  padding: 16px 20px;
+  border-radius: 14px;
+}
+
+.wiki-title-emoji .emoji-picker-current {
+  font-size: 40px;
+}
+
+.wiki-gitbook-title-input {
+  flex: 1;
+  padding: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-size: 42px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+}
+
+.wiki-gitbook-title-input::placeholder {
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+/* Title display in content step */
+.wiki-gitbook-title-display {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.wiki-title-emoji-display {
+  font-size: 40px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.wiki-gitbook-title-display h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.wiki-gitbook-description {
+  font-size: 15px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+/* New page settings */
+.wiki-new-settings {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wiki-setting-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 24px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.wiki-setting-card label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.wiki-setting-card label svg {
+  color: var(--text-muted);
+}
+
+.wiki-select-gitbook {
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wiki-select-gitbook:hover {
+  border-color: var(--border-hover);
+}
+
+.wiki-select-gitbook:focus {
+  border-color: var(--accent);
+}
+
+.wiki-setting-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* New page actions */
+.wiki-new-actions-gitbook {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.wiki-new-actions-gitbook .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wiki-new-actions-gitbook .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .wiki-gitbook-title-input {
+    font-size: 28px;
+  }
+
+  .wiki-title-emoji .emoji-picker-current {
+    font-size: 28px;
+  }
+
+  .wiki-title-emoji .emoji-picker-trigger {
+    padding: 12px 14px;
+  }
+
+  .wiki-gitbook-title-display h1 {
+    font-size: 24px;
+  }
+
+  .wiki-title-emoji-display {
+    font-size: 28px;
+    padding: 8px;
+  }
+
+  .wiki-new-actions-gitbook {
+    flex-direction: column;
+  }
+
+  .wiki-new-actions-gitbook .btn {
+    width: 100%;
+    justify-content: center;
   }
 }

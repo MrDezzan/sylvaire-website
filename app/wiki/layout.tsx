@@ -13,10 +13,13 @@ export default function WikiLayout({ children }: { children: ReactNode }) {
             <div className="wiki-layout">
                 <WikiSidebar />
                 <main className="wiki-main">
-                    {children}
+                    <div className="wiki-main-inner">
+                        {children}
+                    </div>
                 </main>
                 <WikiSearch />
             </div>
         </WikiProvider>
     );
 }
+

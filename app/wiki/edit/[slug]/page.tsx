@@ -16,7 +16,6 @@ export default function WikiEditPage({ params }: EditPageProps) {
     const router = useRouter();
     const { currentPage, loadPage, updatePageContent, updatePageMeta, removePage, canEdit, loading } = useWiki();
     const [saving, setSaving] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
     const [title, setTitle] = useState('');
     const [icon, setIcon] = useState('');
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -28,7 +27,7 @@ export default function WikiEditPage({ params }: EditPageProps) {
     useEffect(() => {
         if (currentPage) {
             setTitle(currentPage.title);
-            setIcon(currentPage.icon || '');
+            setIcon(currentPage.icon || '📄');
         }
     }, [currentPage]);
 
@@ -89,78 +88,58 @@ export default function WikiEditPage({ params }: EditPageProps) {
     };
 
     return (
-        <div className="wiki-edit-page">
-            <header className="wiki-edit-header">
-                <div className="wiki-edit-header-left">
-                    <Link href={`/wiki/${slug}`} className="wiki-back-btn">
-                        ← Назад
+        <div className="wiki-edit-page-gitbook">
+            {/* GitBook-style header with inline editing */}
+            <header className="wiki-gitbook-header">
+                <div className="wiki-gitbook-header-top">
+                    <Link href={`/wiki/${slug}`} className="wiki-back-link">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M19 12H5M12 19l-7-7 7-7" />
+                        </svg>
+                        Назад к странице
                     </Link>
-                    <h1>Редактирование: {currentPage.title}</h1>
-                </div>
-                <div className="wiki-edit-header-right">
-                    <button
-                        type="button"
-                        className="btn secondary"
-                        onClick={() => setShowSettings(!showSettings)}
-                    >
-                        ⚙️ Настройки
-                    </button>
-                </div>
-            </header>
 
-            {showSettings && (
-                <div className="wiki-edit-settings">
-                    <div className="wiki-edit-setting-group">
-                        <label htmlFor="page-title">Заголовок</label>
-                        <div className="wiki-edit-title-row">
-                            <EmojiPicker value={icon || '📄'} onChange={setIcon} />
-                            <input
-                                id="page-title"
-                                type="text"
-                                value={title}
-                                onChange={(e) => setTitle(e.target.value)}
-                                className="wiki-edit-input"
-                                placeholder="Название страницы..."
-                            />
-                        </div>
-                    </div>
                     {slug !== 'home' && (
-                        <div className="wiki-edit-setting-group danger">
-                            <label>Удаление страницы</label>
+                        <div className="wiki-delete-zone">
                             {showDeleteConfirm ? (
-                                <div className="wiki-delete-confirm">
-                                    <p>Вы уверены? Это действие нельзя отменить.</p>
-                                    <div className="wiki-delete-actions">
-                                        <button
-                                            type="button"
-                                            className="btn secondary"
-                                            onClick={() => setShowDeleteConfirm(false)}
-                                        >
-                                            Отмена
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className="btn danger"
-                                            onClick={handleDelete}
-                                        >
-                                            Удалить
-                                        </button>
-                                    </div>
+                                <div className="wiki-delete-confirm-inline">
+                                    <span>Удалить страницу?</span>
+                                    <button type="button" className="btn-text" onClick={() => setShowDeleteConfirm(false)}>
+                                        Отмена
+                                    </button>
+                                    <button type="button" className="btn-text danger" onClick={handleDelete}>
+                                        Удалить
+                                    </button>
                                 </div>
                             ) : (
                                 <button
                                     type="button"
-                                    className="btn danger"
+                                    className="wiki-delete-btn"
                                     onClick={() => setShowDeleteConfirm(true)}
                                 >
-                                    Удалить страницу
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    </svg>
                                 </button>
                             )}
                         </div>
                     )}
                 </div>
-            )}
 
+                {/* Editable title with emoji picker */}
+                <div className="wiki-gitbook-title-editor">
+                    <EmojiPicker value={icon} onChange={setIcon} className="wiki-title-emoji" />
+                    <input
+                        type="text"
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        className="wiki-gitbook-title-input"
+                        placeholder="Название страницы..."
+                    />
+                </div>
+            </header>
+
+            {/* Editor */}
             <WikiEditor
                 initialContent={currentPage.content}
                 onSave={handleSave}

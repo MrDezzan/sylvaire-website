@@ -15,7 +15,7 @@ export default function WikiNewPage() {
     const [icon, setIcon] = useState('📄');
     const [parentId, setParentId] = useState<string>('');
     const [step, setStep] = useState<'meta' | 'content'>('meta');
-    const [content, setContent] = useState('# Новая страница\n\nНачните писать здесь...');
+    const [content, setContent] = useState('');
 
     // Redirect if cannot edit
     useEffect(() => {
@@ -35,7 +35,6 @@ export default function WikiNewPage() {
 
     const handleContinue = () => {
         if (!title.trim()) {
-            alert('Введите заголовок страницы');
             return;
         }
         setStep('content');
@@ -56,7 +55,6 @@ export default function WikiNewPage() {
             }
         } catch (e) {
             console.error('Failed to create page:', e);
-            alert('Не удалось создать страницу');
         } finally {
             setSaving(false);
         }
@@ -70,80 +68,118 @@ export default function WikiNewPage() {
         }
     };
 
-    return (
-        <div className="wiki-new-page">
-            <header className="wiki-edit-header">
-                <div className="wiki-edit-header-left">
-                    <Link href="/wiki" className="wiki-back-btn">
-                        ← Назад
-                    </Link>
-                    <h1>Новая страница</h1>
-                </div>
-            </header>
+    // Parent page options (exclude pages that are too deep)
+    const parentOptions = pages.filter(p => p.id !== 'home');
 
-            {step === 'meta' && (
-                <div className="wiki-new-meta">
-                    <div className="wiki-new-form">
-                        <div className="wiki-edit-setting-group">
-                            <label htmlFor="new-title">Заголовок страницы *</label>
-                            <div className="wiki-edit-title-row">
-                                <EmojiPicker value={icon} onChange={setIcon} />
-                                <input
-                                    id="new-title"
-                                    type="text"
-                                    value={title}
-                                    onChange={(e) => setTitle(e.target.value)}
-                                    className="wiki-edit-input"
-                                    placeholder="Введите заголовок..."
-                                    autoFocus
-                                />
-                            </div>
+    return (
+        <div className="wiki-new-page-gitbook">
+            {step === 'meta' ? (
+                <>
+                    {/* GitBook-style header */}
+                    <header className="wiki-gitbook-header">
+                        <div className="wiki-gitbook-header-top">
+                            <Link href="/wiki" className="wiki-back-link">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                                </svg>
+                                Назад в Wiki
+                            </Link>
                         </div>
 
-                        <div className="wiki-edit-setting-group">
-                            <label htmlFor="new-parent">Родительская страница</label>
+                        {/* Editable title with emoji picker */}
+                        <div className="wiki-gitbook-title-editor">
+                            <EmojiPicker value={icon} onChange={setIcon} className="wiki-title-emoji" />
+                            <input
+                                type="text"
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
+                                className="wiki-gitbook-title-input"
+                                placeholder="Название новой страницы..."
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Page description (optional) */}
+                        <p className="wiki-gitbook-description">
+                            Введите название и выберите иконку для новой страницы
+                        </p>
+                    </header>
+
+                    {/* Parent selection */}
+                    <div className="wiki-new-settings">
+                        <div className="wiki-setting-card">
+                            <label htmlFor="parent-select">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                </svg>
+                                Родительская страница
+                            </label>
                             <select
-                                id="new-parent"
+                                id="parent-select"
                                 value={parentId}
                                 onChange={(e) => setParentId(e.target.value)}
-                                className="wiki-edit-select"
+                                className="wiki-select-gitbook"
                             >
-                                <option value="">— Нет (корневая страница) —</option>
-                                {pages.map(page => (
+                                <option value="">— Корневая страница —</option>
+                                {parentOptions.map(page => (
                                     <option key={page.id} value={page.id}>
                                         {page.icon} {page.title}
                                     </option>
                                 ))}
                             </select>
-                        </div>
-
-                        <div className="wiki-new-actions">
-                            <button
-                                type="button"
-                                className="btn secondary"
-                                onClick={handleCancel}
-                            >
-                                Отмена
-                            </button>
-                            <button
-                                type="button"
-                                className="btn primary"
-                                onClick={handleContinue}
-                            >
-                                Продолжить →
-                            </button>
+                            <span className="wiki-setting-hint">
+                                Выберите, к какой странице будет относиться новая
+                            </span>
                         </div>
                     </div>
-                </div>
-            )}
 
-            {step === 'content' && (
-                <WikiEditor
-                    initialContent={content}
-                    onSave={handleSave}
-                    onCancel={handleCancel}
-                    saving={saving}
-                />
+                    {/* Actions */}
+                    <div className="wiki-new-actions-gitbook">
+                        <button
+                            type="button"
+                            className="btn secondary"
+                            onClick={handleCancel}
+                        >
+                            Отмена
+                        </button>
+                        <button
+                            type="button"
+                            className="btn primary"
+                            onClick={handleContinue}
+                            disabled={!title.trim()}
+                        >
+                            Продолжить
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M5 12h14M12 5l7 7-7 7" />
+                            </svg>
+                        </button>
+                    </div>
+                </>
+            ) : (
+                <>
+                    {/* Header in content step */}
+                    <header className="wiki-gitbook-header compact">
+                        <div className="wiki-gitbook-header-top">
+                            <button type="button" className="wiki-back-link" onClick={() => setStep('meta')}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                                </svg>
+                                Изменить название
+                            </button>
+                        </div>
+                        <div className="wiki-gitbook-title-display">
+                            <span className="wiki-title-emoji-display">{icon}</span>
+                            <h1>{title}</h1>
+                        </div>
+                    </header>
+
+                    <WikiEditor
+                        initialContent={content}
+                        onSave={handleSave}
+                        onCancel={handleCancel}
+                        saving={saving}
+                    />
+                </>
             )}
         </div>
     );
