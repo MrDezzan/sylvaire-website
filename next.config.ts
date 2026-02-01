@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/:path*',
+        source: '/api/:path((?!wiki).*)',
         destination: 'http://localhost:8081/api/:path*',
       },
       {
