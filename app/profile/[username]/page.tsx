@@ -467,6 +467,30 @@ export default function ProfilePage() {
                             </div>
                         )}
 
+                        {profile.warnings && profile.warnings.length > 0 && (
+                            <div className="info-card warnings-card">
+                                <div className="info-title">⚠ Предупреждения</div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    {profile.warnings.map((warn) => (
+                                        <div key={warn.id} style={{
+                                            padding: '8px 12px',
+                                            background: 'rgba(255, 255, 0, 0.1)',
+                                            borderLeft: '3px solid #facc15',
+                                            borderRadius: '4px'
+                                        }}>
+                                            <div style={{ fontSize: '14px', color: '#fff', marginBottom: '4px' }}>
+                                                {warn.reason}
+                                            </div>
+                                            <div style={{ fontSize: '12px', color: '#9ca3af', display: 'flex', justifyContent: 'space-between' }}>
+                                                <span>От: {warn.warnedBy}</span>
+                                                <span>{new Date(warn.warnedAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <div className="description-card">
                             <div className="description-header">
                                 <div className="info-title">◇ О себе</div>

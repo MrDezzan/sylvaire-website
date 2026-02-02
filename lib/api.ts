@@ -103,6 +103,16 @@ export interface PlayerProfile {
     banReason?: string;
     banExpires?: string;
     banRemaining?: string;
+
+    warnings?: WarnEntry[];
+}
+
+export interface WarnEntry {
+    id: number;
+    warnedBy: string;
+    reason: string;
+    warnedAt: string;
+    active: boolean;
 }
 
 
