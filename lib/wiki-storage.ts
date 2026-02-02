@@ -1,6 +1,7 @@
 /**
  * Wiki Storage - API-based storage for wiki pages
  */
+import { api } from './api';
 
 export interface WikiPage {
     id: string;           // Unique slug (e.g., "getting-started")
@@ -23,11 +24,17 @@ export interface WikiStructure {
 /**
  * Fetch all pages from API
  */
-export async function fetchWiki(): Promise<WikiPage[]> {
+export async function fetchWiki(token?: string): Promise<WikiPage[]> {
     try {
-        const res = await fetch('/api/wiki', { cache: 'no-store' });
-        if (!res.ok) throw new Error('Failed to fetch wiki');
-        const data = await res.json();
+        const data = await api<{ pages: WikiPage[] }>('/api/wiki', {
+            // cache: 'no-store' is not directly supported by api helper unless we modify it, 
+            // but api helper uses standard fetch options so we can pass it if we want,
+            // or just rely on default.
+            // lib/api.ts: export async function api<T>(endpoint: string, options: FetchOptions = {}): Promise<T>
+            // interface FetchOptions extends RequestInit { token?: string; }
+            cache: 'no-store',
+            token
+        });
         return data.pages || [];
     } catch (e) {
         console.error('[Wiki] API Fetch Error:', e);
@@ -38,19 +45,14 @@ export async function fetchWiki(): Promise<WikiPage[]> {
 /**
  * Create a new page via API
  */
-export async function apiCreatePage(page: Omit<WikiPage, 'createdAt' | 'updatedAt' | 'order' | 'createdBy'>): Promise<WikiPage | null> {
+export async function apiCreatePage(page: Omit<WikiPage, 'createdAt' | 'updatedAt' | 'order' | 'createdBy'>, token?: string): Promise<WikiPage | null> {
     try {
-        const res = await fetch('/api/wiki', {
+        console.log('[Wiki] Creating page with token:', token ? (token.substring(0, 5) + '...') : 'null');
+        return await api<WikiPage>('/api/wiki', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(page),
+            token,
         });
-        if (!res.ok) {
-            const text = await res.text();
-            console.error(`[Wiki] API Create Failed: ${res.status} ${res.statusText}`, text);
-            throw new Error(`Failed to create page: ${res.status} ${text}`);
-        }
-        return await res.json();
     } catch (e) {
         console.error('[Wiki] API Create Error:', e);
         return null;
@@ -60,19 +62,14 @@ export async function apiCreatePage(page: Omit<WikiPage, 'createdAt' | 'updatedA
 /**
  * Update a page via API
  */
-export async function apiUpdatePage(id: string, updates: Partial<WikiPage>): Promise<WikiPage | null> {
+export async function apiUpdatePage(id: string, updates: Partial<WikiPage>, token?: string): Promise<WikiPage | null> {
     try {
-        const res = await fetch(`/api/wiki/${id}`, {
+        console.log('[Wiki] Updating page with token:', token ? (token.substring(0, 5) + '...') : 'null');
+        return await api<WikiPage>(`/api/wiki/${id}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updates),
+            token,
         });
-        if (!res.ok) {
-            const text = await res.text();
-            console.error(`[Wiki] API Update Failed: ${res.status} ${res.statusText}`, text);
-            throw new Error(`Failed to update page: ${res.status} ${text}`);
-        }
-        return await res.json();
     } catch (e) {
         console.error('[Wiki] API Update Error:', e);
         return null;
@@ -82,12 +79,13 @@ export async function apiUpdatePage(id: string, updates: Partial<WikiPage>): Pro
 /**
  * Delete a page via API
  */
-export async function apiDeletePage(id: string): Promise<boolean> {
+export async function apiDeletePage(id: string, token?: string): Promise<boolean> {
     try {
-        const res = await fetch(`/api/wiki/${id}`, {
+        await api(`/api/wiki/${id}`, {
             method: 'DELETE',
+            token,
         });
-        return res.ok;
+        return true;
     } catch (e) {
         console.error('[Wiki] API Delete Error:', e);
         return false;

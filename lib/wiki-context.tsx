@@ -166,7 +166,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
                 parentId,
                 icon,
                 category,
-            });
+            }, user.token);
 
             if (newPage) {
                 await refresh();
@@ -183,7 +183,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
         if (!canEdit) return false;
 
         try {
-            const updated = await apiUpdatePage(id, { content });
+            const updated = await apiUpdatePage(id, { content }, user?.token);
             if (updated) {
                 await refresh();
                 return true;
@@ -199,7 +199,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
         if (!canEdit) return false;
 
         try {
-            const updated = await apiUpdatePage(id, updates);
+            const updated = await apiUpdatePage(id, updates, user?.token);
             if (updated) {
                 await refresh();
                 return true;
@@ -221,7 +221,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
         }
 
         try {
-            const success = await apiDeletePage(id);
+            const success = await apiDeletePage(id, user?.token);
             if (success) {
                 await refresh();
                 if (currentPage?.id === id) {
