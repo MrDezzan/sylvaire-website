@@ -1,4 +1,5 @@
 import { config } from './config';
+import { FeedFilters } from './types/feed';
 
 interface FetchOptions extends RequestInit {
     token?: string;
