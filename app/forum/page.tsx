@@ -24,7 +24,7 @@ export default function ForumPage() {
             try {
                 // Pass token if user is logged in
                 const token = localStorage.getItem('sylvaire_token');
-                const data = await getFeed(0, token || undefined);
+                const data = await getFeed(0, token || undefined, filters);
                 console.log('[Forum] getFeed response:', data);
                 // Convert FeedPost to Post format
                 const convertedPosts: Post[] = data.posts.map((p: FeedPost) => ({

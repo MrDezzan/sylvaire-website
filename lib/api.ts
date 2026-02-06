@@ -176,12 +176,23 @@ export interface FeedPost {
     isLiked: boolean;
 }
 
-export async function getFeed(page = 0, token?: string): Promise<{ posts: FeedPost[]; hasMore: boolean; total: number }> {
+export async function getFeed(page = 0, token?: string, filters?: FeedFilters): Promise<{ posts: FeedPost[]; hasMore: boolean; total: number }> {
     const options: FetchOptions = {};
     if (token) {
         options.token = token;
     }
-    const data = await api<{ success: boolean; posts: FeedPost[]; hasMore: boolean; total: number }>(`/api/feed?page=${page}`, options);
+
+    let url = `/api/feed?page=${page}`;
+    if (filters) {
+        if (filters.period && filters.period !== 'all') {
+            url += `&period=${filters.period}`;
+        }
+        if (filters.sort) {
+            url += `&sort=${filters.sort}`;
+        }
+    }
+
+    const data = await api<{ success: boolean; posts: FeedPost[]; hasMore: boolean; total: number }>(url, options);
     return data;
 }
 
