@@ -10,7 +10,8 @@ import {
     buildPageTree,
     getChildren as getChildPages,
     getNavigation,
-    generateSlug
+    generateSlug,
+    sanitizePages
 } from './wiki-storage';
 import { useAuth } from './auth-context';
 
@@ -72,7 +73,9 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
     const refresh = useCallback(async () => {
         setLoading(true);
         try {
-            const allPages = await fetchWiki();
+            const rawPages = await fetchWiki();
+            // Sanitize pages to remove any circular references
+            const allPages = sanitizePages(rawPages);
             const tree = buildPageTree(allPages);
             setPages(allPages);
             setPageTree(tree);

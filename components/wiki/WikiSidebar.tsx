@@ -25,7 +25,22 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
         });
     };
 
+    // Track all visited IDs at sidebar level to catch any cycles
+    const allVisited = new Set<string>();
+
     const renderPageItem = (page: WikiPage, depth: number = 0) => {
+        // Absolute guard against revisiting any page
+        if (allVisited.has(page.id)) {
+            return null;
+        }
+
+        // Depth limit
+        if (depth > 5) {
+            return null;
+        }
+
+        allVisited.add(page.id);
+
         const children = getChildren(page.id);
         const hasChildren = children.length > 0;
         const isExpanded = expandedItems.has(page.id);

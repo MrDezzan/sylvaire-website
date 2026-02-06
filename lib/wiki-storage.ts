@@ -1,5 +1,6 @@
 /**
  * Wiki Storage - API-based storage for wiki pages
+ * With robust cycle detection to prevent infinite recursion
  */
 import { api } from './api';
 
@@ -27,11 +28,6 @@ export interface WikiStructure {
 export async function fetchWiki(token?: string): Promise<WikiPage[]> {
     try {
         const data = await api<{ pages: WikiPage[] }>('/api/wiki', {
-            // cache: 'no-store' is not directly supported by api helper unless we modify it, 
-            // but api helper uses standard fetch options so we can pass it if we want,
-            // or just rely on default.
-            // lib/api.ts: export async function api<T>(endpoint: string, options: FetchOptions = {}): Promise<T>
-            // interface FetchOptions extends RequestInit { token?: string; }
             cache: 'no-store',
             token
         });
@@ -94,22 +90,98 @@ export async function apiDeletePage(id: string, token?: string): Promise<boolean
 
 // ------------------------------------------------------------------
 // Local Helper Functions (Client-side logic for tree/nav generation)
+// WITH CYCLE DETECTION
 // ------------------------------------------------------------------
 
 /**
+ * Sanitize pages to remove circular references
+ * This detects and breaks cycles in the parent-child relationships
+ */
+export function sanitizePages(pages: WikiPage[]): WikiPage[] {
+    const idSet = new Set(pages.map(p => p.id));
+    const sanitized: WikiPage[] = [];
+
+    for (const page of pages) {
+        // If parentId points to non-existent page, clear it
+        if (page.parentId && !idSet.has(page.parentId)) {
+            console.warn(`[Wiki] Page "${page.id}" has invalid parentId "${page.parentId}", clearing`);
+            sanitized.push({ ...page, parentId: undefined });
+            continue;
+        }
+
+        // If parentId points to itself, clear it
+        if (page.parentId === page.id) {
+            console.warn(`[Wiki] Page "${page.id}" has self-referential parentId, clearing`);
+            sanitized.push({ ...page, parentId: undefined });
+            continue;
+        }
+
+        sanitized.push(page);
+    }
+
+    // Now detect cycles using ancestor check
+    const pageMap = new Map(sanitized.map(p => [p.id, p]));
+    const result: WikiPage[] = [];
+
+    for (const page of sanitized) {
+        if (hasCycle(page.id, pageMap)) {
+            console.warn(`[Wiki] Cycle detected involving page "${page.id}", clearing parentId`);
+            result.push({ ...page, parentId: undefined });
+        } else {
+            result.push(page);
+        }
+    }
+
+    return result;
+}
+
+/**
+ * Check if a page is involved in a cycle
+ */
+function hasCycle(pageId: string, pageMap: Map<string, WikiPage>): boolean {
+    const visited = new Set<string>();
+    let current = pageId;
+
+    while (current) {
+        if (visited.has(current)) {
+            return true; // Cycle detected
+        }
+        visited.add(current);
+
+        const page = pageMap.get(current);
+        if (!page) break;
+
+        current = page.parentId || '';
+    }
+
+    return false;
+}
+
+/**
  * Get pages organized by hierarchy (requires pages to be passed in)
+ * Returns only root-level pages (pages without parents)
  */
 export function buildPageTree(pages: WikiPage[]): WikiPage[] {
+    // First sanitize to remove any cycles
+    const safe = sanitizePages(pages);
+
     // Get root pages (no parent or parent is undefined)
-    return pages
+    return safe
         .filter(p => !p.parentId)
         .sort((a, b) => a.order - b.order);
 }
 
 /**
  * Get child pages for a parent (requires pages to be passed in)
+ * With safety limit to prevent deep recursion
  */
-export function getChildren(pages: WikiPage[], parentId: string): WikiPage[] {
+export function getChildren(pages: WikiPage[], parentId: string, depth: number = 0): WikiPage[] {
+    // Safety limit - prevent too deep nesting
+    if (depth > 10) {
+        console.warn(`[Wiki] Max depth reached when getting children for "${parentId}"`);
+        return [];
+    }
+
     return pages
         .filter(p => p.parentId === parentId)
         .sort((a, b) => a.order - b.order);
@@ -140,7 +212,7 @@ export function generateSlug(title: string, existingPages: WikiPage[]): string {
         .replace(/^-|-$/g, '');
 
     // Ensure uniqueness
-    let uniqueSlug = slug;
+    let uniqueSlug = slug || 'page';
     let counter = 1;
 
     while (existingPages.some(p => p.id === uniqueSlug)) {
