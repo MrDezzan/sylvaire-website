@@ -98,10 +98,13 @@ export async function apiDeletePage(id: string, token?: string): Promise<boolean
  * This detects and breaks cycles in the parent-child relationships
  */
 export function sanitizePages(pages: WikiPage[]): WikiPage[] {
-    const idSet = new Set(pages.map(p => p.id));
+    // Filter out any invalid pages first (no id or undefined id)
+    const validPages = pages.filter(p => p && p.id && typeof p.id === 'string' && p.id.trim() !== '');
+
+    const idSet = new Set(validPages.map(p => p.id));
     const sanitized: WikiPage[] = [];
 
-    for (const page of pages) {
+    for (const page of validPages) {
         // If parentId points to non-existent page, clear it
         if (page.parentId && !idSet.has(page.parentId)) {
             console.warn(`[Wiki] Page "${page.id}" has invalid parentId "${page.parentId}", clearing`);

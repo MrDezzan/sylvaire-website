@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWiki } from '@/lib/wiki-context';
 import { WikiPage } from '@/lib/wiki-storage';
 
@@ -12,6 +12,24 @@ interface WikiSidebarProps {
 export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
     const { pageTree, getChildren, canEdit, setIsSearchOpen } = useWiki();
     const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set(['home']));
+    const [mobileOpen, setMobileOpen] = useState(false);
+
+    // Close mobile menu on navigation
+    useEffect(() => {
+        setMobileOpen(false);
+    }, [currentPageId]);
+
+    // Prevent body scroll when mobile menu is open
+    useEffect(() => {
+        if (mobileOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => {
+            document.body.style.overflow = '';
+        };
+    }, [mobileOpen]);
 
     const toggleExpand = (id: string) => {
         setExpandedItems(prev => {
@@ -106,54 +124,86 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
     const categoryNames = Object.keys(groupedPages).sort();
 
     return (
-        <aside className="wiki-sidebar">
-            <div className="wiki-sidebar-header">
-                <Link href="/wiki" className="wiki-sidebar-logo">
-                    <img src="/assets/logo.png" alt="Sylvaire" />
-                    <span>Wiki</span>
-                </Link>
-            </div>
-
+        <>
+            {/* Mobile Menu Button */}
             <button
-                className="wiki-search-trigger"
-                onClick={() => setIsSearchOpen(true)}
+                className="wiki-mobile-menu-btn"
+                onClick={() => setMobileOpen(true)}
+                aria-label="Открыть меню"
             >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="11" cy="11" r="8" />
-                    <path d="M21 21l-4.35-4.35" />
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 12h18M3 6h18M3 18h18" />
                 </svg>
-                <span>Поиск...</span>
-                <kbd>Ctrl+K</kbd>
             </button>
 
-            <nav className="wiki-sidebar-nav">
-                {/* Categorized pages */}
-                {categoryNames.map(category => (
-                    <div key={category} className="wiki-sidebar-group">
-                        <div className="wiki-sidebar-group-title">{category}</div>
-                        {groupedPages[category].map(page => renderPageItem(page))}
-                    </div>
-                ))}
+            {/* Mobile Overlay */}
+            <div
+                className={`wiki-sidebar-overlay ${mobileOpen ? 'open' : ''}`}
+                onClick={() => setMobileOpen(false)}
+            />
 
-                {/* Uncategorized pages (if any, show at the bottom or top depending on preference, putting at bottom here) */}
-                {uncategorizedPages.length > 0 && (
-                    <div className="wiki-sidebar-group">
-                        {categoryNames.length > 0 && <div className="wiki-sidebar-group-title">Разное</div>}
-                        {uncategorizedPages.map(page => renderPageItem(page))}
-                    </div>
-                )}
-            </nav>
+            <aside className={`wiki-sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
+                {/* Mobile Close Button */}
+                <button
+                    className="wiki-sidebar-close"
+                    onClick={() => setMobileOpen(false)}
+                    aria-label="Закрыть меню"
+                    style={{ display: 'none' }}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                    </svg>
+                </button>
 
-            {canEdit && (
-                <div className="wiki-sidebar-footer">
-                    <Link href="/wiki/new" className="wiki-sidebar-new-btn">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M12 5v14M5 12h14" />
-                        </svg>
-                        Новая страница
+                <div className="wiki-sidebar-header">
+                    <Link href="/wiki" className="wiki-sidebar-logo">
+                        <img src="/assets/logo.png" alt="Sylvaire" />
+                        <span>Wiki</span>
                     </Link>
                 </div>
-            )}
-        </aside>
+
+                <button
+                    className="wiki-search-trigger"
+                    onClick={() => setIsSearchOpen(true)}
+                >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="11" cy="11" r="8" />
+                        <path d="M21 21l-4.35-4.35" />
+                    </svg>
+                    <span>Поиск...</span>
+                    <kbd>Ctrl+K</kbd>
+                </button>
+
+                <nav className="wiki-sidebar-nav">
+                    {/* Categorized pages */}
+                    {categoryNames.map(category => (
+                        <div key={category} className="wiki-sidebar-group">
+                            <div className="wiki-sidebar-group-title">{category}</div>
+                            {groupedPages[category].map(page => renderPageItem(page))}
+                        </div>
+                    ))}
+
+                    {/* Uncategorized pages (if any, show at the bottom or top depending on preference, putting at bottom here) */}
+                    {uncategorizedPages.length > 0 && (
+                        <div className="wiki-sidebar-group">
+                            {categoryNames.length > 0 && <div className="wiki-sidebar-group-title">Разное</div>}
+                            {uncategorizedPages.map(page => renderPageItem(page))}
+                        </div>
+                    )}
+                </nav>
+
+                {canEdit && (
+                    <div className="wiki-sidebar-footer">
+                        <Link href="/wiki/new" className="wiki-sidebar-new-btn">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M12 5v14M5 12h14" />
+                            </svg>
+                            Новая страница
+                        </Link>
+                    </div>
+                )}
+            </aside>
+        </>
     );
 }
+

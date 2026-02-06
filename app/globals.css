@@ -9739,3 +9739,255 @@ body {
   transform: scale(1.15);
   border-color: rgba(255, 255, 255, 0.3);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   WIKI MOBILE OPTIMIZATION
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Mobile Menu Toggle Button */
+.wiki-mobile-menu-btn {
+  display: none;
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 200;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+  cursor: pointer;
+  transition: all 0.3s;
+  align-items: center;
+  justify-content: center;
+}
+
+.wiki-mobile-menu-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 25px rgba(99, 102, 241, 0.5);
+}
+
+.wiki-mobile-menu-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+/* Mobile Sidebar Overlay */
+.wiki-sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 150;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.wiki-sidebar-overlay.open {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .wiki-mobile-menu-btn {
+    display: flex;
+  }
+  
+  .wiki-sidebar-overlay.open {
+    display: block;
+  }
+  
+  .wiki-sidebar {
+    display: flex;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 200;
+  }
+  
+  .wiki-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  
+  /* Mobile sidebar close button */
+  .wiki-sidebar-close {
+    display: flex;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .wiki-sidebar-close:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  
+  /* Wiki content adjustments */
+  .wiki-content-header {
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  
+  .wiki-content-title {
+    font-size: 28px;
+  }
+  
+  .wiki-content-body .wiki-h1 {
+    font-size: 24px;
+    margin: 32px 0 16px;
+  }
+  
+  .wiki-content-body .wiki-h2 {
+    font-size: 20px;
+    margin: 28px 0 12px;
+  }
+  
+  .wiki-content-body .wiki-h3 {
+    font-size: 18px;
+    margin: 24px 0 10px;
+  }
+  
+  .wiki-content-body {
+    font-size: 15px;
+    line-height: 1.7;
+  }
+  
+  .wiki-content-body .wiki-code-block {
+    padding: 14px;
+    margin: 16px -20px;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+  
+  .wiki-content-body .wiki-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 13px;
+  }
+  
+  .wiki-content-body .wiki-table th,
+  .wiki-content-body .wiki-table td {
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+  
+  /* Navigation on mobile */
+  .wiki-navigation {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .wiki-nav-link {
+    padding: 14px 16px;
+  }
+  
+  /* GitBook header on mobile */
+  .wiki-gitbook-header {
+    padding: 16px 0;
+  }
+  
+  .wiki-gitbook-title-input {
+    font-size: 24px;
+  }
+  
+  .wiki-gitbook-title-display h1 {
+    font-size: 24px;
+  }
+  
+  /* New page settings */
+  .wiki-new-settings {
+    gap: 16px;
+  }
+  
+  .wiki-setting-card {
+    padding: 16px;
+  }
+  
+  .wiki-new-actions-gitbook {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .wiki-new-actions-gitbook .btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  /* Page cards */
+  .wiki-page-cards {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Search modal mobile */
+  .wiki-search-modal {
+    padding: 20px;
+    margin: 0;
+    max-height: 100vh;
+    border-radius: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .wiki-search-input-wrapper {
+    padding: 12px 16px;
+  }
+  
+  .wiki-search-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+}
+
+/* Small phones */
+@media (max-width: 480px) {
+  .wiki-main-inner {
+    padding: 16px 14px;
+    padding-bottom: 100px;
+  }
+  
+  .wiki-content-title {
+    font-size: 24px;
+  }
+  
+  .wiki-content-icon {
+    font-size: 40px;
+    padding: 8px;
+  }
+  
+  .wiki-edit-btn span {
+    display: none;
+  }
+  
+  .wiki-content-body .wiki-blockquote {
+    margin: 16px -14px;
+    padding: 12px 16px;
+    border-radius: 0;
+  }
+}
+
+/* Landscape phones */
+@media (max-width: 768px) and (orientation: landscape) {
+  .wiki-mobile-menu-btn {
+    bottom: 12px;
+    left: 12px;
+    width: 48px;
+    height: 48px;
+  }
+  
+  .wiki-main-inner {
+    padding-bottom: 70px;
+  }
+}
