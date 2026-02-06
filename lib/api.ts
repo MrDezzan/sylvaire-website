@@ -152,10 +152,14 @@ export async function getLeaderboard(period: LeaderboardPeriod = 'ALL_TIME'): Pr
     const endpoint = period === 'ALL_TIME' ? '/api/leaderboard' : `/api/leaderboard/period?period=${period}`;
     const data = await api<{ success: boolean; leaderboard: LeaderboardEntry[]; players?: LeaderboardEntry[] }>(endpoint);
     // Backend sends 'leaderboard' for period queries and 'leaderboard' (or 'players'?) for simple query?
-    // Checking WebServer.java line 620: "leaderboard", result
     // Checking WebServer.java line 658: "leaderboard", result
     // So both return 'leaderboard'.
     return data.leaderboard || data.players || [];
+}
+
+export async function getAllPlayers(): Promise<LeaderboardEntry[]> {
+    const data = await api<{ success: boolean; players: LeaderboardEntry[] }>('/api/players');
+    return data.players || [];
 }
 
 // Feed

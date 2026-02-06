@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { getLeaderboard, LeaderboardEntry } from '@/lib/api';
+import { getAllPlayers, LeaderboardEntry } from '@/lib/api';
 import { IconSearch, IconDiscord } from '@/components/ui/icons';
 
 export default function ParticipantsPage() {
@@ -12,18 +12,9 @@ export default function ParticipantsPage() {
 
     useEffect(() => {
         setLoading(true);
-        getLeaderboard('ALL_TIME').then((data) => {
-            const unique = data.reduce((acc, current) => {
-                const x = acc.find(item => item.username === current.username);
-                if (!x) {
-                    return acc.concat([current]);
-                } else {
-                    return acc;
-                }
-            }, [] as LeaderboardEntry[]);
-
-            unique.sort((a, b) => a.username.localeCompare(b.username));
-            setEntries(unique);
+        getAllPlayers().then((data) => {
+            // Data is already sorted by backend: Online first, then Alphabetical
+            setEntries(data);
             setLoading(false);
         });
     }, []);
