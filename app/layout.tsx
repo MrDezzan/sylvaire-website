@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import ConditionalLayout from "@/components/ConditionalLayout";
 import Providers from "@/components/Providers";
 import MaintenanceGuard from "@/components/MaintenanceGuard";
 import { Toaster } from "sonner";
-
-const inter = Inter({ subsets: ["latin", "cyrillic"] });
 
 export const metadata: Metadata = {
   title: "Sylvaire — Приватный сервер Minecraft",
@@ -26,7 +23,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ru">
-      <body className={`${inter.className} antialiased`}>
+      <body className="antialiased">
         <Providers>
           <MaintenanceGuard>
             <ConditionalLayout>
