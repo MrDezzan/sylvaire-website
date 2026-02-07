@@ -210,7 +210,7 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
                             {categoryNames.length > 0 && <div className="wiki-sidebar-group-title">Разное</div>}
                             {uncategorizedPages.map(page => renderPageItem(page))}
                         </div>
-                    ))}
+                    )}
                 </nav>
 
                 {canEdit && (
