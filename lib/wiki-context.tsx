@@ -185,8 +185,21 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
     const updatePageContent = useCallback(async (id: string, content: string): Promise<boolean> => {
         if (!canEdit) return false;
 
+        const page = pages.find(p => p.id === id);
+        if (!page) {
+            console.error('[Wiki] Cannot update content: page not found locally');
+            return false;
+        }
+
         try {
-            const updated = await apiUpdatePage(id, { content }, user?.token);
+            // Backend requires all fields
+            const fullUpdate = {
+                ...page,
+                content,
+                // Ensure we send id as slug if needed, though backend handles url param
+            };
+
+            const updated = await apiUpdatePage(id, fullUpdate, user?.token);
             if (updated) {
                 await refresh();
                 return true;
@@ -196,13 +209,25 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
             console.error('[Wiki] Failed to update page content:', e);
             return false;
         }
-    }, [canEdit, refresh]);
+    }, [canEdit, pages, refresh, user]);
 
     const updatePageMeta = useCallback(async (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }): Promise<boolean> => {
         if (!canEdit) return false;
 
+        const page = pages.find(p => p.id === id);
+        if (!page) {
+            console.error('[Wiki] Cannot update meta: page not found locally');
+            return false;
+        }
+
         try {
-            const updated = await apiUpdatePage(id, updates, user?.token);
+            // Backend requires all fields
+            const fullUpdate = {
+                ...page,
+                ...updates
+            };
+
+            const updated = await apiUpdatePage(id, fullUpdate, user?.token);
             if (updated) {
                 await refresh();
                 return true;
@@ -212,7 +237,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
             console.error('[Wiki] Failed to update page meta:', e);
             return false;
         }
-    }, [canEdit, refresh]);
+    }, [canEdit, pages, refresh, user]);
 
     const removePage = useCallback(async (id: string): Promise<boolean> => {
         if (!canEdit) return false;
