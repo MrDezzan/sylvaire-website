@@ -143,36 +143,42 @@ export default function WikiEditPage({ params }: EditPageProps) {
                         {slug !== 'home' && (
                             <button
                                 type="button"
-                                className="btn secondary small"
+                                className="btn"
+                                style={{
+                                    backgroundColor: 'rgba(234, 179, 8, 0.1)',
+                                    color: '#EAB308',
+                                    border: '1px solid rgba(234, 179, 8, 0.2)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '8px',
+                                    padding: '8px 16px',
+                                    borderRadius: '8px',
+                                    fontWeight: 600,
+                                    fontSize: '14px',
+                                    whiteSpace: 'nowrap'
+                                }}
                                 onClick={() => {
                                     if (confirm('Сделать эту страницу главной? Она будет открываться первой при входе в Wiki.')) {
-                                        // Update slug to 'home'
                                         updatePageMeta(slug, {
                                             title,
                                             id: 'home'
                                         }).then(success => {
                                             if (success) {
-                                                // If success, Backend has created 'home' with this content.
-                                                // We should try to delete the old page to avoid duplication,
-                                                // UNLESS the backend renamed it (which it doesn't).
-                                                // But wait, if we delete 'slug', we lose it? 
-                                                // Correct, because we moved it to 'home'.
                                                 removePage(slug).then(() => {
                                                     window.location.href = '/wiki/home';
                                                 });
                                             } else {
-                                                alert('Не удалось установить главную страницу. Возможно, страница "home" уже существует.');
+                                                alert('Не удалось установить главную страницу.');
                                             }
                                         });
                                     }
                                 }}
-                                title="Сделать главной страницей wiki"
+                                title="Сделать главной страницей"
                             >
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 4 }}>
-                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                    <polyline points="9 22 9 12 15 12 15 22" />
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="none">
+                                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                                 </svg>
-                                Главная
+                                Сделать главной
                             </button>
                         )}
                     </div>

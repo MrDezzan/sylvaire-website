@@ -7415,27 +7415,43 @@ body {
 .wiki-sidebar {
   position: fixed;
   left: 0;
-  top: 80px;
-  /* Below navbar */
+  top: 0;
+  /* Stuck to ceiling */
   width: 280px;
-  height: calc(100vh - 80px);
+  height: 100vh;
+  /* Full viewport height */
+  padding-top: 80px;
+  /* Internal padding to clear navbar area */
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   z-index: 100;
+  /* Below navbar (1000) */
   overflow: hidden;
 }
 
 @media (max-width: 768px) {
   .wiki-sidebar {
     display: none;
+    top: 0;
+    z-index: 1001;
+    /* On mobile, it might need to overlay everything including navbar if opened */
+    padding-top: 0;
+  }
+
+  .wiki-sidebar.mobile-open {
+    display: flex;
+    padding-top: 0;
+    /* Mobile menu often has its own header */
   }
 }
 
 .wiki-sidebar-header {
   padding: 20px;
   border-bottom: 1px solid var(--border);
+  /* If padding-top is high, we might want to adjust this or the logo position */
+  /* But standard flow puts this after padding-top */
 }
 
 .wiki-sidebar-logo {
