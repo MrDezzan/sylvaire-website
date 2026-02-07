@@ -7420,8 +7420,8 @@ body {
   width: 280px;
   height: 100vh;
   /* Full viewport height */
-  padding-top: 72px;
-  /* Reduced internal padding to raise content slightly higher */
+  padding-top: 0;
+  /* No padding-top, let the header determine spacing */
   background: var(--bg-secondary);
   border-right: 1px solid var(--border);
   display: flex;
@@ -7443,6 +7443,7 @@ body {
     z-index: 1001;
     /* On mobile, it might need to overlay everything including navbar if opened */
     padding-top: 0;
+    /* Mobile menu often has its own header */
   }
 
   .wiki-sidebar.mobile-open {
@@ -7465,10 +7466,9 @@ body {
 }
 
 .wiki-sidebar-header {
-  padding: 20px;
+  padding: 24px 20px;
+  /* Increased vertical padding */
   border-bottom: 1px solid var(--border);
-  /* If padding-top is high, we might want to adjust this or the logo position */
-  /* But standard flow puts this after padding-top */
 }
 
 .wiki-sidebar-logo {
@@ -7487,21 +7487,24 @@ body {
   object-fit: contain;
 }
 
-/* Home Link Styling */
+/* Home Link Styling - Premium Gradient */
 .wiki-sidebar-link.home-link {
   color: #EAB308 !important;
   font-weight: 600;
-  background: rgba(234, 179, 8, 0.05);
-  border: 1px solid rgba(234, 179, 8, 0.1);
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.15) 0%, rgba(234, 179, 8, 0.02) 100%);
+  border: none;
+  border-left: 3px solid #EAB308;
+  border-radius: 4px;
+  /* Less rounded to match border-left */
   margin-bottom: 8px;
-  border-radius: 8px;
+  padding-left: 13px !important;
+  /* Adjust for border width (16-3) */
 }
 
 .wiki-sidebar-link.home-link:hover,
 .wiki-sidebar-link.home-link.active {
-  background: rgba(234, 179, 8, 0.1);
-  border-color: rgba(234, 179, 8, 0.3);
-  color: #FACC15 !important;
+  background: linear-gradient(90deg, rgba(234, 179, 8, 0.25) 0%, rgba(234, 179, 8, 0.05) 100%);
+  box-shadow: 0 4px 12px rgba(234, 179, 8, 0.1);
 }
 
 /* Wiki Search Trigger */
