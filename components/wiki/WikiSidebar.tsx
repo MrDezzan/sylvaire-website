@@ -106,11 +106,16 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
         );
     };
 
-    // Group pages by category
+    // Find home page
+    const homePage = pageTree.find(p => p.id === 'home');
+
+    // Group pages by category (excluding home)
     const groupedPages: Record<string, WikiPage[]> = {};
     const uncategorizedPages: WikiPage[] = [];
 
     pageTree.forEach(page => {
+        if (page.id === 'home') return; // Skip home page in regular lists
+
         if (page.category) {
             if (!groupedPages[page.category]) {
                 groupedPages[page.category] = [];
@@ -125,7 +130,7 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
 
     return (
         <>
-            {/* Mobile Menu Button */}
+            {/* Mobile Menu Button - unchanged */}
             <button
                 className="wiki-mobile-menu-btn"
                 onClick={() => setMobileOpen(true)}
@@ -136,19 +141,17 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
                 </svg>
             </button>
 
-            {/* Mobile Overlay */}
+            {/* Mobile Overlay - unchanged */}
             <div
                 className={`wiki-sidebar-overlay ${mobileOpen ? 'open' : ''}`}
                 onClick={() => setMobileOpen(false)}
             />
 
             <aside className={`wiki-sidebar ${mobileOpen ? 'mobile-open' : ''}`}>
-                {/* Mobile Close Button */}
                 <button
                     className="wiki-sidebar-close"
                     onClick={() => setMobileOpen(false)}
                     aria-label="Закрыть меню"
-                    style={{ display: 'none' }}
                 >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M18 6L6 18M6 6l12 12" />
@@ -162,19 +165,37 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
                     </Link>
                 </div>
 
-                <button
-                    className="wiki-search-trigger"
-                    onClick={() => setIsSearchOpen(true)}
-                >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="8" />
-                        <path d="M21 21l-4.35-4.35" />
-                    </svg>
-                    <span>Поиск...</span>
-                    <kbd>Ctrl+K</kbd>
-                </button>
+                <div className="wiki-sidebar-actions">
+                    <button
+                        className="wiki-search-trigger"
+                        onClick={() => setIsSearchOpen(true)}
+                    >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <circle cx="11" cy="11" r="8" />
+                            <path d="M21 21l-4.35-4.35" />
+                        </svg>
+                        <span>Поиск...</span>
+                        <kbd>Ctrl+K</kbd>
+                    </button>
+                </div>
 
                 <nav className="wiki-sidebar-nav">
+                    {/* Home Page Pinned */}
+                    {homePage && (
+                        <div className="wiki-sidebar-pinned">
+                            <Link
+                                href="/wiki/home"
+                                className={`wiki-sidebar-link home-link ${currentPageId === 'home' ? 'active' : ''}`}
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                    <polyline points="9 22 9 12 15 12 15 22" />
+                                </svg>
+                                <span className="wiki-sidebar-title">Главная</span>
+                            </Link>
+                        </div>
+                    )}
+
                     {/* Categorized pages */}
                     {categoryNames.map(category => (
                         <div key={category} className="wiki-sidebar-group">
@@ -183,13 +204,13 @@ export default function WikiSidebar({ currentPageId }: WikiSidebarProps) {
                         </div>
                     ))}
 
-                    {/* Uncategorized pages (if any, show at the bottom or top depending on preference, putting at bottom here) */}
+                    {/* Uncategorized pages */}
                     {uncategorizedPages.length > 0 && (
                         <div className="wiki-sidebar-group">
                             {categoryNames.length > 0 && <div className="wiki-sidebar-group-title">Разное</div>}
                             {uncategorizedPages.map(page => renderPageItem(page))}
                         </div>
-                    )}
+                    ))}
                 </nav>
 
                 {canEdit && (

@@ -131,13 +131,51 @@ export default function WikiEditPage({ params }: EditPageProps) {
 
                 {/* Editable title and category */}
                 <div className="wiki-gitbook-title-editor-wrapper">
-                    <input
-                        type="text"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        className="wiki-gitbook-title-input"
-                        placeholder="Название страницы..."
-                    />
+                    <div style={{ display: 'flex', gap: '10px', width: '100%', alignItems: 'center' }}>
+                        <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            className="wiki-gitbook-title-input"
+                            placeholder="Название страницы..."
+                            style={{ flex: 1 }}
+                        />
+                        {slug !== 'home' && (
+                            <button
+                                type="button"
+                                className="btn secondary small"
+                                onClick={() => {
+                                    if (confirm('Сделать эту страницу главной? Она будет открываться первой при входе в Wiki.')) {
+                                        // Update slug to 'home'
+                                        updatePageMeta(slug, {
+                                            title,
+                                            id: 'home'
+                                        }).then(success => {
+                                            if (success) {
+                                                // If success, Backend has created 'home' with this content.
+                                                // We should try to delete the old page to avoid duplication,
+                                                // UNLESS the backend renamed it (which it doesn't).
+                                                // But wait, if we delete 'slug', we lose it? 
+                                                // Correct, because we moved it to 'home'.
+                                                removePage(slug).then(() => {
+                                                    window.location.href = '/wiki/home';
+                                                });
+                                            } else {
+                                                alert('Не удалось установить главную страницу. Возможно, страница "home" уже существует.');
+                                            }
+                                        });
+                                    }
+                                }}
+                                title="Сделать главной страницей wiki"
+                            >
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 4 }}>
+                                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                                    <polyline points="9 22 9 12 15 12 15 22" />
+                                </svg>
+                                Главная
+                            </button>
+                        )}
+                    </div>
 
                     <div className="wiki-category-input-wrapper">
                         <label className="wiki-category-label">Категория:</label>

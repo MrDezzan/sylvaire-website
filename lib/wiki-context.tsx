@@ -38,7 +38,7 @@ interface WikiContextType {
     canEdit: boolean;
     createPage: (title: string, content: string, parentId?: string, icon?: string, category?: string) => Promise<WikiPage | null>;
     updatePageContent: (id: string, content: string) => Promise<boolean>;
-    updatePageMeta: (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }) => Promise<boolean>;
+    updatePageMeta: (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string; id?: string }) => Promise<boolean>;
     removePage: (id: string) => Promise<boolean>;
 
     // Utils
@@ -211,7 +211,7 @@ export function WikiProvider({ children, initialPageId }: { children: ReactNode;
         }
     }, [canEdit, pages, refresh, user]);
 
-    const updatePageMeta = useCallback(async (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string }): Promise<boolean> => {
+    const updatePageMeta = useCallback(async (id: string, updates: { title?: string; icon?: string; parentId?: string; category?: string; id?: string }): Promise<boolean> => {
         if (!canEdit) return false;
 
         const page = pages.find(p => p.id === id);
