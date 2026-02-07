@@ -10,6 +10,7 @@ interface WikiContentProps {
 
 // Simple markdown renderer with GitBook-style blocks support
 function renderMarkdown(content: string): string {
+    if (!content) return '';
     let html = content;
 
     // Process GitBook-style blocks BEFORE escaping HTML
