@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sylvaire Website
 
-## Getting Started
+Website for the Sylvaire Minecraft community: a forum, a wiki, player profiles, leaderboards, a live server map and a 3D skin viewer. Built with Next.js and talks to the game server's API.
 
-First, run the development server:
+## Features
+
+- **Feed and forum** with posts, comments, notifications and a forum leaderboard
+- **Wiki** where members can create and edit articles
+- **Player profiles** with a 3D skin preview (skinview3d + Three.js)
+- **Leaderboards and participants list**
+- **Organizations** page
+- **Live map** embedded from BlueMap
+- **Admin area** with action logs and a maintenance mode
+- Login through the server API and toast notifications
+
+## Tech Stack
+
+- Next.js 16 (App Router), React 19, TypeScript
+- Tailwind CSS 4
+- Three.js, skinview3d, react-skinview3d
+- Sonner for notifications
+
+## Run Locally
 
 ```bash
+npm install
+cp .env.example .env     # set NEXT_PUBLIC_BLUEMAP_URL
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The site opens at `http://localhost:3000`. API requests go to the same domain by default (a reverse proxy forwards `/api/*` to the Minecraft server). To use another backend, set `NEXT_PUBLIC_API_URL`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | What it does |
+|---|---|
+| `npm run dev` | development server |
+| `npm run build` | production build |
+| `npm run start` | run the production build |
+| `npm run lint` | ESLint |
